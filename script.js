@@ -4,6 +4,7 @@ const noteButton = document.getElementById("noteButton");
 const journalModal = document.getElementById("journalModal");
 const saveMemory = document.getElementById("saveMemory");
 const emotionButtons = document.querySelectorAll(".emotion");
+const closeJournal = document.getElementById("closeJournal");
 let selectedEmotion = "happy";
 function resizeCanvas(){
     canvas.width = canvas.clientWidth;
@@ -87,6 +88,9 @@ emotionButtons.forEach(button => {
         button.classList.add("selected");
         selectedEmotion = button.dataset.emotion;
     });
+});
+closeJournal.addEventListener("click", () => {
+    journalModal.classList.add("hidden");
 });
 emotionButtons[0].classList.add("selected");
 intersections.push(new Intersection(0, 0));
