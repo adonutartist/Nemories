@@ -14,6 +14,7 @@ const closeEditor = document.getElementById("closeEditor");
 let memories = JSON.parse(localStorage.getItem("memories")) || [];
 let selectedEmotion = "happy";
 let editIndex = null;
+let hoverBuilding = null;
 const emotionColors = {
     happy:"#47ff6b",
     excited:"#ffe84d",
@@ -152,19 +153,31 @@ function drawRoads(){
     ctx.strokeStyle = "#555";
     roads.forEach(road => {
         ctx.beginPath();
-        ctx.moveTo(canvas.width/2 + road.x1, canvas.height/2 + road.y1);
-        ctx.lineTo(canvas.width/2 + road.x2, canvas.height/2 + road.y2);
+        ctx.moveTo(canvas.width/2 + camera.x + road.x1, canvas.height/2 + camera.y + road.y1);
+        ctx.lineTo(canvas.width/2 + camera.x + road.x2, canvas.height/2 + camera.y + road.y2);
         ctx.stroke();
     });
 }
 function drawBuildings(){
     buildings.forEach(building => {
+        ctx.save();
+        if(building === hoverBuilding){
+            ctx.shadowColor = building.color;
+            ctx.shadowBlur = 18;
+        }
         ctx.fillStyle = "#222";
-        ctx.fillRect(canvas.width/2 + building.x, canvas.height/2 + building.y, building.width, building.height);
+        ctx.fillRect(canvas.width/2 + camera.x + building.x, canvas.height/2 + camera.y + building.y, building.width, building.height);
         ctx.strokeStyle = building.color;
         ctx.lineWidth = 3;
-        ctx.strokeRect(canvas.width/2 + building.x, canvas.height/2 + building.y, building.width, building.height);
+        ctx.strokeRect(canvas.width/2 + camera.x + building.x, canvas.height/2 + camera.y + building.y, building.width, building.height);
+        ctx.restore();
     }); 
+}
+function screenToWorld(x, y){
+    return{
+        x: x-canvas.width/2-camera.x,
+        y: y-canvas.height/2-camera.y
+    };
 }
 function drawPlayer(){
     player.pulse += 0.05;
@@ -228,6 +241,41 @@ function spawnBuilding(memoryIndex){
     roads.push(new Road(0, -120, 0, y+height/2));
     buildings.push(new Building(x, y, width, height, emotionColors[memory.emotion], memoryIndex));
 }
+function clickBuilding(e){
+    const rect = canvas.getBoundingClientRect();
+    const mouse = screenToWorld(
+        e.clientX-rect.left,
+        e.clientY-rect.top
+    );
+    for(const building of buildings){
+        if(mouse.x >= building.x &&
+           mouse.x <= building.x + building.width &&
+           mouse.y >= building.y &&
+           mouse.y <= building.y + building.height
+        ){
+            journalModal.classList.remove("hidden");
+            openEditor(building.memoryID);
+            return;
+        }
+    }
+}
+function updateHoveredBuilding(e){
+    const rect = canvas.getBoundingClientRect();
+    const mouse = screenToWorld(e.clientX-rect.left,
+                                e.clientY-rect.top       
+    );
+    hoverBuilding = null;
+    for(const building of buildings){
+        if(mouse.x >= building.x &&
+           mouse.x <= building.x + building.width &&
+           mouse.y >= building.y &&
+           mouse.y <= building.y + building.height
+        ){
+            hoverBuilding = building;
+            break;
+        }
+    }
+}
 function render(){
     ctx.fillStyle = "#111111";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -258,6 +306,8 @@ closeJournal.addEventListener("click", () => {
 closeEditor.addEventListener("click", () => {
     journalModal.classList.add("hidden");
 })
+canvas.addEventListener("click", clickBuilding);
+canvas.addEventListener("mousemove", updateHoveredBuilding);
 emotionButtons[0].classList.add("selected");
 intersections.push(new Intersection(0, 0));
 roads.push(new Road(0, 0, 0, -120));
