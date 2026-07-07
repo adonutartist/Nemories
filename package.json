@@ -2,16 +2,16 @@
   "name": "nemories",
   "version": "1.0.0",
   "description": "An archive, an organizer for all your memories or youn call em Nemories i guess :p",
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "electron ."
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/adonutartist/Nemories.git"
   },
   "keywords": [],
-  "author": "",
+  "author": "Nemo Donut",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {

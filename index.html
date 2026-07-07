@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<title>Nemories</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="titleBar">
+        <span>Nemories</span>
+        <button id="noteButton">Notes</button>
+    </div>
+    <div id="world">
+        <canvas id="worldCanvas"></canvas>
+    </div>
+    <div id="journalModal" class="hidden">
+        <div id="journalBox">
+            <h2>New Nemory</h2>
+            <p id="emotionTitle">Choose Nemotion</p>
+            <div id="emotionRow">
+                <button class="emotion" data-emotion="happy">:]</button>
+                <button class="emotion" data-emotion="excited">xD</button>
+                <button class="emotion" data-emotion="loving"><3</button>
+                <button class="emotion" data-emotion="neutral">:|</button>
+                <button class="emotion" data-emotion="sad">;-;</button>
+                <button class="emotion" data-emotion="angry">>:c</button>
+            </div>
+            <textarea id="memoryText" placeholder="Log your Nemory... Gud or Bad anything is fine! Just be truthful to yourself while writing it :>"></textarea>
+            <button id="saveMemory">Save Nemory</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>

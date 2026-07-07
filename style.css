@@ -1,0 +1,193 @@
+*{
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: Consolas, monospace;
+}
+
+body{
+    background: #101010;
+    color: white;
+    font-family: Consolas, monospace;
+    overflow: hidden;
+}
+
+#titleBar{
+    height: 40px;
+    background: #181818;
+    border-bottom: 1px solid #333;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 15px;
+}
+
+#noteButton{
+    border: none;
+    font-size: 18px;
+    background: #1b1b1b;
+    color: #e5e5e5;
+    padding: 5px 10px;
+    border: 1px solid #3f3f3f;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .2s ease;
+}
+
+#noteButton:hover{
+    background: #252525;
+    border-color: #505050;
+    color: white;
+    box-shadow: 0 0 12px white;
+}
+
+#noteButton:active{
+    transform: scale(.98);
+}
+
+#world{
+    width: 100vw;
+    height: calc(100vh - 40px);
+    overflow: hidden;
+    position: relative;
+    background: #111;
+}
+
+#worldCanvas{
+    width: 100%;
+    height: 100%;
+    display: block;
+    background: #111111;
+}
+
+@keyframes pulse{
+    0%{
+        transform: translate(-50%, -50%) scale(1);
+    }
+    50%{
+        transform: translate(-50%, -50%) scale(1.3);
+    }
+    100%{
+        transform: translate(-50%, -50%) scale(1);
+    }
+}
+
+#journalModal.hidden{
+    display: none;
+}
+
+#journalModal{
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, .45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#journalBox{
+    width: 420px;
+    background: #1b1b1b;
+    border: 1px solid #444;
+    border-radius: 12px;
+    padding: 20px;
+}
+
+#journalBox h2{
+    margin-bottom: 15px;
+}
+
+#emotionRow{
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+#memoryText{
+    width: 100%;
+    height: 140px;
+    resize: none;
+    background: #111;
+    color: white;
+    border: 1px solid #555;
+    padding: 10px;
+    margin-bottom: 15px;
+}
+
+#saveMemory{
+    width: 100%;
+    height: 40px;
+    background: #1b1b1b;
+    color: #e5e5e5;
+    border: 1px solid #3f3f3f;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all .2s ease;
+    font-size: 15px;
+}
+
+#saveMemory:hover{
+    background: #252525;
+    border-color: #505050;
+    color: white;
+    box-shadow: 0 0 12px white;
+}
+
+#saveMemory:active{
+    transform: scale(.98);
+}
+
+#emotionTitle{
+    margin-bottom: 8px;
+    color: white;
+    font-size: 14px;
+}
+
+.emotion{
+    font-family: Consolas, monospace;
+    font-size: 24px;
+    color: #777;
+    background: none;
+    border: none;
+    cursor: pointer;
+    transition: all .2s ease;
+    padding: 4px 8px;
+}
+
+.emotion[data-emotion="happy"]:hover,
+.emotion[data-emotion="happy"]:selected{
+    color: #47ff6b;
+    text-shadow: 0 0 10px #47ff6b;
+}
+
+.emotion[data-emotion="excited"]:hover,
+.emotion[data-emotion="excited"]:selected{
+    color: #ffe84d;
+    text-shadow: 0 0 10px #ffe84d;
+}
+
+.emotion[data-emotion="loving"]:hover,
+.emotion[data-emotion="loving"]:selected{
+    color: #ff63d5;
+    text-shadow: 0 0 10px #ff63d5;
+}
+
+.emotion[data-emotion="neutral"]:hover,
+.emotion[data-emotion="neutral"]:selected{
+    color: white;
+    text-shadow: 0 0 10px white;
+}
+
+.emotion[data-emotion="sad"]:hover,
+.emotion[data-emotion="sad"]:selected{
+    color: #66c8ff;
+    text-shadow: 0 0 10px #66c8ff;
+}
+
+.emotion[data-emotion="angry"]:hover,
+.emotion[data-emotion="angry"]:selected{
+    color: #ff5050;
+    text-shadow: 0 0 10px #ff5050;
+}
