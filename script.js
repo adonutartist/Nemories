@@ -99,6 +99,9 @@ saveMemory.onclick = () => {
         memories.push(data);
     }
     localStorage.setItem("memories", JSON.stringify(memories));
+    if(editIndex === null){
+        spawnBuilding(memories.length-1);
+    }
     showList();
 };
 addMemory.onclick = () => {
@@ -135,12 +138,13 @@ class Road{
     }
 }
 class Building{
-    constructor(x, y, width, height, color){
+    constructor(x, y, width, height, color, memoryID){
         this.x = x;
         this.y = y;
         this.width = width;
         this.height = height;
         this.color = color;
+        this.memoryID = memoryID;
     }
 }
 function drawRoads(){
@@ -155,9 +159,12 @@ function drawRoads(){
 }
 function drawBuildings(){
     buildings.forEach(building => {
-        ctx.fillStyle = building.color;
+        ctx.fillStyle = "#222";
         ctx.fillRect(canvas.width/2 + building.x, canvas.height/2 + building.y, building.width, building.height);
-    });
+        ctx.strokeStyle = building.color;
+        ctx.lineWidth = 3;
+        ctx.strokeRect(canvas.width/2 + building.x, canvas.height/2 + building.y, building.width, building.height);
+    }); 
 }
 function drawPlayer(){
     player.pulse += 0.05;
@@ -172,6 +179,54 @@ function drawPlayer(){
     ctx.shadowBlur = 18;
     ctx.fill();
     ctx.restore();
+}
+function overlaps(x, y, w, h){
+    for(const b of buildings){
+        if(x<b.x+b.width+15&&
+           x+w>b.x-15 &&
+           y<b.y+b.height+15 &&
+           y+h>b.y-15 
+        ){
+            return true;
+        }
+    }
+    return false;
+}
+function spawnBuilding(memoryIndex){
+    const memory = memories[memoryIndex];
+    const chars = memory.text.trim().length;
+    let width, height;
+    if(chars <= 30){
+        width = 55;
+        height = 55;
+    }
+    else if(chars <= 80){
+        width = 70;
+        height = 70;
+    }
+    else if(chars <= 150){
+        width = 85;
+        height = 90;
+    }
+    else if(chars <= 300){
+        width = 105;
+        height = 120;
+    }
+    else if(chars <= 500){
+        width = 125;
+        height = 145;
+    }
+    else{
+        width = 145;
+        height = 170;
+    }
+    let x = -width/2;
+    let y = -220;
+    while(overlaps(x, y, width, height)){
+        y-= 90
+    }
+    roads.push(new Road(0, -120, 0, y+height/2));
+    buildings.push(new Building(x, y, width, height, emotionColors[memory.emotion], memoryIndex));
 }
 function render(){
     ctx.fillStyle = "#111111";
@@ -206,5 +261,4 @@ closeEditor.addEventListener("click", () => {
 emotionButtons[0].classList.add("selected");
 intersections.push(new Intersection(0, 0));
 roads.push(new Road(0, 0, 0, -120));
-buildings.push(new Building(-25, -180, 50, 50, "#FFD54F"));
 render();
