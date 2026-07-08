@@ -5,4 +5,4 @@ An archive, an organizer for all your memories or youn call em Nemories i guess 
 
 You can read the full development log here:
 
-[Journal](journal.md)
+[Journal](Journal.md)
