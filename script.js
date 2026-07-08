@@ -151,6 +151,7 @@ class RoadNode{
         this.parent = parent;
         this.children = [];
         this.hasBuilding = false;
+        this.reserved = false;
     }
 }
 class Building{
@@ -230,7 +231,7 @@ function createRoadNode(parent, angle, length){
     return node;
 }
 function getExpandableNodes(){
-    return roadNodes.filter(node => node.children.length < 3 && !node.hasBuilding);
+    return roadNodes.filter(node => node.children.length < 3 && !node.hasBuilding && !node.reserved);
 }
 function randomChoice(array){
     return array[Math.floor(Math.random() * array.length)];
@@ -248,6 +249,7 @@ function growRoad(){
     const endpoint = createRoadNode(junction, angle, 120);
     return {parent, junction, endpoint, angle};
 }
+
 function startDrag(e){
     dragging = true;
     dragDistance = 0;
@@ -286,8 +288,8 @@ function drawPlayer(){
 }
 function overlaps(x, y, w, h){
     for(const b of buildings){
-        if(x<b.x+b.width+15&&
-           x+w>b.x-15 &&
+        if(x<b.x+b.width+40 &&
+           x+w>b.x-40 &&
            y<b.y+b.height+15 &&
            y+h>b.y-15 
         ){
@@ -327,6 +329,7 @@ function spawnBuilding(memoryIndex){
     const branch = growRoad();
     if(!branch) return;
     const node = branch.junction;
+    node.reserved = true;
     const perp = branch.angle + Math.PI/2;
     let side = Math.random()<0.5 ? -1 : 1;
     let distance = 100;
@@ -339,7 +342,10 @@ function spawnBuilding(memoryIndex){
         }
         distance += 50
         if(distance > 600){
-            return
+            node.reserved = false;
+            roads.splice(roads.length - 2, 2);
+            roadNodes.splice(roadNodes.indexOf(node), 1);
+            return spawnBuilding(memoryIndex);
         }
     }
     roads.push(new Road(node.x, node.y, node.x + Math.cos(perp)*distance*side, node.y + Math.sin(perp)*distance*side));
