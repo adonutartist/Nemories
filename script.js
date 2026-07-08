@@ -239,11 +239,14 @@ function growRoad(){
     const candidates = getExpandableNodes();
     if(candidates.length === 0) return null;
     const parent = randomChoice(candidates);
-    const angles = [-Math.PI/2, 0, Math.PI/2, Math.PI];
+    const directions = [-Math.PI/2, 0, Math.PI/2, Math.PI];
     const used = parent.children.map(child => Math.atan2(child.y - parent.y, child.x - parent.x));
-    const possible = angles.filter(angle => {return !used.some(a => Math.abs(a - angle)<0.1);});
-    if(possible.length === 0) return null;
-    return createRoadNode(parent, randomChoice(possible), 120);
+    const possible = directions.filter(dir => !used.some(a => Math.abs(a - dir)<0.1));
+    if(possible.length === 0) return growRoad();
+    const angle = randomChoice(possible);
+    const junction = createRoadNode(parent, angle, 120);
+    const endpoint = createRoadNode(junction, angle, 120);
+    return {parent, junction, endpoint, angle};
 }
 function startDrag(e){
     dragging = true;
@@ -321,18 +324,34 @@ function spawnBuilding(memoryIndex){
         width = 145;
         height = 170;
     }
-    const node = growRoad();
-    if(!node) return;
-    const angle = Math.atan2(node.y - node.parent.y, node.x - node.parent.x);
-    const perp = angle + Math.PI/2;
-    const side = Math.random() < 0.5 ? -1 : 1;
-    const offset = 45;
-    let x = node.x + Math.cos(perp) * offset * side - width/2;
-    let y = node.y + Math.sin(perp) * offset * side - height/2;
+    const branch = growRoad();
+    if(!branch) return;
+    const node = branch.junction;
+    const perp = branch.angle + Math.PI/2;
+    const side = Math.random()<0.5 ? -1 : 1;
+    const offset = 70;
+    let x = node.x + Math.cos(perp)*offset*side - width/2;
+    let y = node.y + Math.sin(perp)*offset*side - height/2;
+    if(Math.abs(Math.cos(branch.angle))<0.1){
+        if(branch.angle < 0){
+            y+=height/2;
+        }
+        else{
+            y-=height/2
+        }
+    }
+    else{
+        if(Math.cos(branch.angle)>0){
+            x-=width/2;
+        }
+        else{
+            x+=width/2
+        }
+    }
     while(overlaps(x, y, width, height)){
         y-= 90
     }
-    node.hasBuilding = true;
+    branch.junction.hasBuilding = true;
     buildings.push(new Building(x, y, width, height, emotionColors[memory.emotion], memoryIndex));
 }
 function clickBuilding(e){
