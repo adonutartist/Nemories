@@ -1,6 +1,7 @@
 # Devlog #1 — From Idea to First Prototype
 
 **Project:** Nemories
+
 **Date:** July 7, 2026 2:00 PM to 6:00 PM & July 8, 2026 1::00 AM to 3:00 AM
 
 ---
