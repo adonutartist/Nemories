@@ -128,6 +128,7 @@ let lastMouseY = 0;
 const roads = [];
 const buildings = [];
 const intersections = [];
+const roadNodes = [];
 const player = {x: 0, y: 0, radius: 6, pulse: 0};
 class Intersection{
     constructor(x, y){
@@ -141,6 +142,14 @@ class Road{
         this.y1 = y1;
         this.x2 = x2;
         this.y2 = y2;
+    }
+}
+class RoadNode{
+    constructor(x, y, parent = null){
+        this.x = x;
+        this.y = y;
+        this.parent = parent;
+        this.children = [];
     }
 }
 class Building{
@@ -207,6 +216,19 @@ function screenToWorld(x, y){
         y: y-canvas.height/2-camera.y
     };
 }
+function distance(x1, y1, x2, y2){
+    return Math.hypot(x2 - x1, y2 - y1);
+}
+function createRoadNode(parent, angle, length){
+    const x = parent.x + Math.cos(angle) * length;
+    const y = parent.y + Math.sin(angle) * length;
+    const node = new RoadNode(x, y, parent);
+    parent.children.push(node);
+    roadNodes.push(node);
+    roads.push(new Road(parent.x, parent.y, node.x, node.y));
+    return node;
+}
+
 function startDrag(e){
     dragging = true;
     dragDistance = 0;
@@ -366,6 +388,7 @@ canvas.addEventListener("mousedown", startDrag);
 window.addEventListener("mousemove", e => {dragCamera(e); updateHoveredBuilding(e);});
 window.addEventListener("mouseup", stopDrag);
 emotionButtons[0].classList.add("selected");
-intersections.push(new Intersection(0, 0));
-roads.push(new Road(0, 0, 0, -120));
+const rootNode = new RoadNode(0, 0);
+roadNodes.push(rootNode);
+createRoadNode(rootNode, -Math.PI/2, 120);
 render();
