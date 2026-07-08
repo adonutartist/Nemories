@@ -120,6 +120,11 @@ function resizeCanvas(){
 window.addEventListener("resize", resizeCanvas);
 resizeCanvas();
 const camera = {x: 0, y: 0, zoom: 1};
+let dragging = false;
+let dragDistance = 0;
+const DRAG_THRESHOLD = 5;
+let lastMouseX = 0;
+let lastMouseY = 0;
 const roads = [];
 const buildings = [];
 const intersections = [];
@@ -202,6 +207,28 @@ function screenToWorld(x, y){
         y: y-canvas.height/2-camera.y
     };
 }
+function startDrag(e){
+    dragging = true;
+    dragDistance = 0;
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+    canvas.style.cursor = "grabbing";
+}
+function dragCamera(e){
+    if(!dragging) return;
+    const dx = e.clientX - lastMouseX;
+    const dy = e.clientY - lastMouseY;
+    dragDistance += Math.hypot(dx, dy);
+    camera.x += dx;
+    camera.y += dy;
+    lastMouseX = e.clientX;
+    lastMouseY = e.clientY;
+}
+function stopDrag(){
+    dragging = false;
+    setTimeout(() => {dragDistance = 0;}, 0);
+    canvas.style.cursor = hoverBuilding ? "pointer" : "grab";
+}
 function drawPlayer(){
     player.pulse += 0.05;
     const radius = player.radius + Math.sin(player.pulse) * 1.2;
@@ -265,6 +292,7 @@ function spawnBuilding(memoryIndex){
     buildings.push(new Building(x, y, width, height, emotionColors[memory.emotion], memoryIndex));
 }
 function clickBuilding(e){
+    if(dragDistance > DRAG_THRESHOLD) return;
     const rect = canvas.getBoundingClientRect();
     const mouse = screenToWorld(
         e.clientX-rect.left,
@@ -283,10 +311,11 @@ function clickBuilding(e){
     }
 }
 function updateHoveredBuilding(e){
+    if(dragging) return;
     const rect = canvas.getBoundingClientRect();
     const mouse = screenToWorld(e.clientX-rect.left,
                                 e.clientY-rect.top       
-    );
+                                );
     hoverBuilding = null;
     for(const building of buildings){
         if(mouse.x >= building.x &&
@@ -295,9 +324,11 @@ function updateHoveredBuilding(e){
            mouse.y <= building.y + building.height
         ){
             hoverBuilding = building;
-            break;
+            canvas.style.cursor = "pointer";
+            return;
         }
     }
+    canvas.style.cursor = "grab";
 }
 function render(){
     ctx.fillStyle = "#111111";
@@ -331,7 +362,9 @@ closeEditor.addEventListener("click", () => {
     journalModal.classList.add("hidden");
 })
 canvas.addEventListener("click", clickBuilding);
-canvas.addEventListener("mousemove", updateHoveredBuilding);
+canvas.addEventListener("mousedown", startDrag);
+window.addEventListener("mousemove", e => {dragCamera(e); updateHoveredBuilding(e);});
+window.addEventListener("mouseup", stopDrag);
 emotionButtons[0].classList.add("selected");
 intersections.push(new Intersection(0, 0));
 roads.push(new Road(0, 0, 0, -120));
