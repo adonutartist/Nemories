@@ -3,6 +3,4 @@ An archive, an organizer for all your memories or youn call em Nemories i guess 
 
 ## Development Journal
 
-You can read the full development log here:
-
-[Journal](Journal.md)
+[You can read the full development log by TOUCHING MEEEEEEE](Journal.md)
