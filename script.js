@@ -173,6 +173,29 @@ function drawBuildings(){
         ctx.restore();
     }); 
 }
+function drawBuildingLabels(){
+    if(!hoverBuilding) return;
+    const x = canvas.width/2 + camera.x + hoverBuilding.x + hoverBuilding.width/2;
+    const y = canvas.height/2 + camera.y + hoverBuilding.y - 12;
+    const text = `Memory #${hoverBuilding.memoryID + 1}`;
+    ctx.save();
+    ctx.font = "15px Consolas";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    const padding = 8;
+    const w = ctx.measureText(text).width + padding * 2;
+    const h = 28;
+    ctx.fillStyle = "rgba(20, 20, 20, 0.9)";
+    ctx.strokeStyle = hoverBuilding.color;
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.roundRect(x-w/2, y-h, w, h, 8);
+    ctx.fill();
+    ctx.stroke();
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText(text, x, y-h/2);
+    ctx.restore();
+}
 function screenToWorld(x, y){
     return{
         x: x-canvas.width/2-camera.x,
@@ -281,6 +304,7 @@ function render(){
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     drawRoads();
     drawBuildings();
+    drawBuildingLabels();
     drawPlayer();
     requestAnimationFrame(render);
 }
