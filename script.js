@@ -150,6 +150,7 @@ class RoadNode{
         this.y = y;
         this.parent = parent;
         this.children = [];
+        this.hasBuilding = false;
     }
 }
 class Building{
@@ -228,7 +229,22 @@ function createRoadNode(parent, angle, length){
     roads.push(new Road(parent.x, parent.y, node.x, node.y));
     return node;
 }
-
+function getExpandableNodes(){
+    return roadNodes.filter(node => node.children.length < 3 && !node.hasBuilding);
+}
+function randomChoice(array){
+    return array[Math.floor(Math.random() * array.length)];
+}
+function growRoad(){
+    const candidates = getExpandableNodes();
+    if(candidates.length === 0) return null;
+    const parent = randomChoice(candidates);
+    const angles = [-Math.PI/2, 0, Math.PI/2, Math.PI];
+    const used = parent.children.map(child => Math.atan2(child.y - parent.y, child.x - parent.x));
+    const possible = angles.filter(angle => {return !used.some(a => Math.abs(a - angle)<0.1);});
+    if(possible.length === 0) return null;
+    return createRoadNode(parent, randomChoice(possible), 120);
+}
 function startDrag(e){
     dragging = true;
     dragDistance = 0;
@@ -305,12 +321,18 @@ function spawnBuilding(memoryIndex){
         width = 145;
         height = 170;
     }
-    let x = -width/2;
-    let y = -220;
+    const node = growRoad();
+    if(!node) return;
+    const angle = Math.atan2(node.y - node.parent.y, node.x - node.parent.x);
+    const perp = angle + Math.PI/2;
+    const side = Math.random() < 0.5 ? -1 : 1;
+    const offset = 45;
+    let x = node.x + Math.cos(perp) * offset * side - width/2;
+    let y = node.y + Math.sin(perp) * offset * side - height/2;
     while(overlaps(x, y, width, height)){
         y-= 90
     }
-    roads.push(new Road(0, -120, 0, y+height/2));
+    node.hasBuilding = true;
     buildings.push(new Building(x, y, width, height, emotionColors[memory.emotion], memoryIndex));
 }
 function clickBuilding(e){
