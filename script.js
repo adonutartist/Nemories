@@ -328,30 +328,22 @@ function spawnBuilding(memoryIndex){
     if(!branch) return;
     const node = branch.junction;
     const perp = branch.angle + Math.PI/2;
-    const side = Math.random()<0.5 ? -1 : 1;
-    const offset = 70;
-    let x = node.x + Math.cos(perp)*offset*side - width/2;
-    let y = node.y + Math.sin(perp)*offset*side - height/2;
-    if(Math.abs(Math.cos(branch.angle))<0.1){
-        if(branch.angle < 0){
-            y+=height/2;
+    let side = Math.random()<0.5 ? -1 : 1;
+    let distance = 100;
+    let x,y;
+    while(true){
+        x = node.x + Math.cos(perp) * distance * side - width/2;
+        y = node.y + Math.sin(perp) * distance * side - height/2;
+        if(!overlaps(x, y, width, height)){
+            break;
         }
-        else{
-            y-=height/2
-        }
-    }
-    else{
-        if(Math.cos(branch.angle)>0){
-            x-=width/2;
-        }
-        else{
-            x+=width/2
+        distance += 50
+        if(distance > 600){
+            return
         }
     }
-    while(overlaps(x, y, width, height)){
-        y-= 90
-    }
-    branch.junction.hasBuilding = true;
+    roads.push(new Road(node.x, node.y, node.x + Math.cos(perp)*distance*side, node.y + Math.sin(perp)*distance*side));
+    node.hasBuilding = true;
     buildings.push(new Building(x, y, width, height, emotionColors[memory.emotion], memoryIndex));
 }
 function clickBuilding(e){
