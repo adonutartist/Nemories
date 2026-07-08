@@ -142,6 +142,7 @@ class Road{
         this.y1 = y1;
         this.x2 = x2;
         this.y2 = y2;
+        this.bend = null;
     }
 }
 class RoadNode{
@@ -167,10 +168,18 @@ class Building{
 function drawRoads(){
     ctx.lineWidth = 8;
     ctx.strokeStyle = "#555";
+    ctx.lineJoin = "round";
+    ctx.lineCap = "round";
     roads.forEach(road => {
         ctx.beginPath();
         ctx.moveTo(canvas.width/2 + camera.x + road.x1, canvas.height/2 + camera.y + road.y1);
-        ctx.lineTo(canvas.width/2 + camera.x + road.x2, canvas.height/2 + camera.y + road.y2);
+        if(road.bend){
+            ctx.lineTo(
+                canvas.width/2+camera.x+road.bend.x,
+                canvas.height/2+camera.y+road.bend.y
+            );
+        }
+        ctx.lineTo(canvas.width/2+camera.x+road.x2, canvas.height/2+camera.y+road.y2);
         ctx.stroke();
     });
 }
@@ -249,7 +258,19 @@ function growRoad(){
     const endpoint = createRoadNode(junction, angle, 120);
     return {parent, junction, endpoint, angle};
 }
-
+function roadHitsBuilding(x1,y1,x2,y2){
+    for(const b of buildings){
+        if(
+            Math.max(x1,x2)>b.x &&
+            Math.min(x1,x2)<b.x+b.width &&
+            Math.max(y1,y2)>b.y &&
+            Math.min(y1,y2)<b.y+b.height
+        ){
+            return true;
+        }
+    }
+    return false;
+}
 function startDrag(e){
     dragging = true;
     dragDistance = 0;
@@ -337,7 +358,12 @@ function spawnBuilding(memoryIndex){
     while(true){
         x = node.x + Math.cos(perp) * distance * side - width/2;
         y = node.y + Math.sin(perp) * distance * side - height/2;
-        if(!overlaps(x, y, width, height)){
+        const roadEndX = node.x + Math.cos(perp)*distance*side;
+        const roadEndY = node.y + Math.sin(perp)*distance*side;
+        if(
+            !overlaps(x,y,width,height) &&
+            !roadHitsBuilding(node.x,node.y,roadEndX,roadEndY)
+        ){
             break;
         }
         distance += 50
@@ -348,7 +374,24 @@ function spawnBuilding(memoryIndex){
             return spawnBuilding(memoryIndex);
         }
     }
-    roads.push(new Road(node.x, node.y, node.x + Math.cos(perp)*distance*side, node.y + Math.sin(perp)*distance*side));
+    let endX = node.x + Math.cos(perp)*distance*side;
+    let endY = node.y + Math.sin(perp)*distance*side;
+    let road = new Road(node.x, node.y, endX, endY);
+    if(distance > 150){
+        if(Math.abs(endX - node.x) > Math.abs(endY - node.y)){
+            road.bend = {
+                x:(node.x + endX) / 2,
+                y:node.y
+            };
+        }
+        else{
+            road.bend = {
+                x:node.x,
+                y:(node.y + endY) / 2
+            };
+        }
+    }
+    roads.push(road);
     node.hasBuilding = true;
     buildings.push(new Building(x, y, width, height, emotionColors[memory.emotion], memoryIndex));
 }
