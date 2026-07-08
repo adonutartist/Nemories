@@ -137,12 +137,13 @@ class Intersection{
     }
 }
 class Road{
-    constructor(x1, y1, x2, y2){
+    constructor(x1, y1, x2, y2, bend=null, openEnd=true){
         this.x1 = x1;
         this.y1 = y1;
         this.x2 = x2;
         this.y2 = y2;
-        this.bend = null;
+        this.bend = bend;
+        this.openEnd = openEnd;
     }
 }
 class RoadNode{
@@ -152,6 +153,7 @@ class RoadNode{
         this.parent = parent;
         this.children = [];
         this.hasBuilding = false;
+        this.hasBuildingBranch = false;
         this.reserved = false;
     }
 }
@@ -180,8 +182,43 @@ function drawRoads(){
             );
         }
         ctx.lineTo(canvas.width/2+camera.x+road.x2, canvas.height/2+camera.y+road.y2);
+        if(!isRoadEndConnected(road)){
+            let gradient = ctx.createLinearGradient(
+                canvas.width/2+camera.x+road.x1,
+                canvas.height/2 + camera.y + road.y1,
+                canvas.width / 2 + camera.x+road.x2,
+                canvas.height/2+camera.y+road.y2
+            );
+            gradient.addColorStop(0, "#555");
+            gradient.addColorStop(1, "#111");
+            ctx.strokeStyle = gradient;
+        }
+        else{
+            ctx.strokeStyle = "#555";
+        }
         ctx.stroke();
     });
+}
+function isRoadEndConnected(road){
+    for(const other of roads){
+        if(other === road) continue;
+        const distance = Math.hypot(
+            road.x2 - other.x1,
+            road.y2 - other.y1
+        );
+        if(distance<5){
+            return true;
+        }
+    }
+    return false;
+}
+function isRoadConnected(road){
+    for(const b of buildings){
+        if(road.x2>b.x && road.x2<b.x+b.width && road.y2>b.y && road.y2<b.y+b.height){
+            return true;
+        }
+    }
+    return false;
 }
 function drawBuildings(){
     buildings.forEach(building => {
@@ -197,6 +234,16 @@ function drawBuildings(){
         ctx.strokeRect(canvas.width/2 + camera.x + building.x, canvas.height/2 + camera.y + building.y, building.width, building.height);
         ctx.restore();
     }); 
+}
+function createBuildingBranch(){
+    const candidates = getExpandableNodes();
+    if(candidates.length === 0) return null;
+    const parent = randomChoice(candidates);
+    const directions = [0, Math.PI/2, Math.PI, -Math.PI/2];
+    const angle = randomChoice(directions);
+    const node = createRoadNode(parent, angle, 120);
+    node.hasBuilding = true;
+    return{parent, node, angle};
 }
 function drawBuildingLabels(){
     if(!hoverBuilding) return;
@@ -240,7 +287,7 @@ function createRoadNode(parent, angle, length){
     return node;
 }
 function getExpandableNodes(){
-    return roadNodes.filter(node => node.children.length < 3 && !node.hasBuilding && !node.reserved);
+    return roadNodes.filter(node => node.children.length < 4 && !node.hasBuilding && !node.hasBuildingBranch && !node.reserved);
 }
 function randomChoice(array){
     return array[Math.floor(Math.random() * array.length)];
@@ -266,6 +313,18 @@ function roadHitsBuilding(x1,y1,x2,y2){
             Math.max(y1,y2)>b.y &&
             Math.min(y1,y2)<b.y+b.height
         ){
+            return true;
+        }
+    }
+    return false;
+}
+function buildingHitsRoad(x,y,w,h){
+    for(const road of roads){
+        let minX = Math.min(road.x1, road.x2);
+        let maxX = Math.max(road.x1, road.x2);
+        let minY = Math.min(road.y1, road.y2);
+        let maxY = Math.max(road.y1, road.y2);
+        if(x<maxX && x+w>minX && y<maxY && y+h>minY){
             return true;
         }
     }
@@ -347,9 +406,10 @@ function spawnBuilding(memoryIndex){
         width = 145;
         height = 170;
     }
-    const branch = growRoad();
+    const branch = createBuildingBranch();
     if(!branch) return;
-    const node = branch.junction;
+    const node = branch.node;
+    node.hasBuilding = true;
     node.reserved = true;
     const perp = branch.angle + Math.PI/2;
     let side = Math.random()<0.5 ? -1 : 1;
@@ -362,6 +422,7 @@ function spawnBuilding(memoryIndex){
         const roadEndY = node.y + Math.sin(perp)*distance*side;
         if(
             !overlaps(x,y,width,height) &&
+            !buildingHitsRoad(x,y,width,height) &&
             !roadHitsBuilding(node.x,node.y,roadEndX,roadEndY)
         ){
             break;
@@ -369,14 +430,14 @@ function spawnBuilding(memoryIndex){
         distance += 50
         if(distance > 600){
             node.reserved = false;
-            roads.splice(roads.length - 2, 2);
-            roadNodes.splice(roadNodes.indexOf(node), 1);
+            node.hasBuildingBranch = false;
+            roads.splice(roads.length - 1, 1);
             return spawnBuilding(memoryIndex);
         }
     }
     let endX = node.x + Math.cos(perp)*distance*side;
     let endY = node.y + Math.sin(perp)*distance*side;
-    let road = new Road(node.x, node.y, endX, endY);
+    let road = new Road(node.x, node.y, endX, endY, null, false);
     if(distance > 150){
         if(Math.abs(endX - node.x) > Math.abs(endY - node.y)){
             road.bend = {
@@ -392,7 +453,6 @@ function spawnBuilding(memoryIndex){
         }
     }
     roads.push(road);
-    node.hasBuilding = true;
     buildings.push(new Building(x, y, width, height, emotionColors[memory.emotion], memoryIndex));
 }
 function clickBuilding(e){
