@@ -52,6 +52,12 @@ body{
     padding: 0 15px;
 }
 
+#topButtons{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
 #noteButton{
     border: none;
     font-size: 18px;
