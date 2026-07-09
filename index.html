@@ -8,10 +8,21 @@
 <body>
     <div id="titleBar">
         <span>Nemories</span>
+        <button id="statsButton">Stats</button>
         <button id="noteButton">Notes</button>
     </div>
     <div id="world">
         <canvas id="worldCanvas"></canvas>
+    </div>
+    <div id="statsModal" class="hidden">
+        <div class="statsBox">
+            <div id="statsHeader">
+                <h2>Nemory Statistics</h2>
+                <button id="closeStats">✕</button>
+            </div>
+            <canvas id="pieChart" width="300" height="300"></canvas>
+            <div id="statsLegend"></div>
+        </div>
     </div>
     <div id="journalModal" class="hidden">
         <div id="journalBox">

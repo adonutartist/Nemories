@@ -11,6 +11,12 @@ const memoryList = document.getElementById("memoryList");
 const memoryText = document.getElementById("memoryText");
 const emotionButtons = document.querySelectorAll(".emotion");
 const closeEditor = document.getElementById("closeEditor");
+const statsButton = document.getElementById("statsButton");
+const statsModal = document.getElementById("statsModal");
+const closeStats = document.getElementById("closeStats");
+const pieChart = document.getElementById("pieChart");
+const pieCtx = pieChart.getContext("2d");
+const statsLegend = document.getElementById("statsLegend");
 let memories = JSON.parse(localStorage.getItem("memories")) || [];
 let selectedEmotion = "happy";
 let editIndex = null;
@@ -562,6 +568,47 @@ function updateHoveredBuilding(e){
     }
     canvas.style.cursor = "grab";
 }
+function drawStats(){
+    pieCtx.clearRect(0,0,pieChart.width,pieChart.height);
+    const counts = {};
+    memories.forEach(memory => {
+        if(!counts[memory.emotion]){
+            counts[memory.emotion] = 0;
+        }
+        counts[memory.emotion]++;
+    });
+    const total = memories.length;
+    if(total === 0){
+        pieCtx.fillStyle = "white";
+        pieCtx.font = "18px Consolas";
+        pieCtx.fillText("No Nemories Yet... But you can change that!", 80, 150);
+        return;
+    }
+    let startAngle = 0;
+    Object.keys(counts).forEach(emotion => {
+        const amount = counts[emotion];
+        const slice = (amount/total)*Math.PI*2;
+        pieCtx.beginPath();
+        pieCtx.moveTo(150,150);
+        pieCtx.arc(150,150,120,startAngle,startAngle+slice);
+        pieCtx.closePath();
+        pieCtx.fillStyle = emotionColors[emotion];
+        pieCtx.fill();
+        startAngle += slice;
+    });
+    drawLegend(counts);
+}
+function drawLegend(counts){
+    statsLegend.innerHTML="";
+    Object.keys(counts).forEach(emotion=>{
+        const div=document.createElement("div");
+        div.className="legendItem";
+        div.innerHTML=`
+        <span class="legendColor" style="background:${emotionColors[emotion]}"></span>
+        ${emotion}: ${counts[emotion]}`;
+        statsLegend.appendChild(div);
+    });
+}
 function render(){
     ctx.fillStyle = "#111111";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -577,6 +624,13 @@ function render(){
     ctx.restore();
     requestAnimationFrame(render);
 }
+statsButton.onclick = () => {
+    statsModal.classList.remove("hidden");
+    drawStats();
+};
+closeStats.onclick = () => {
+    statsModal.classList.add("hidden");
+};
 noteButton.addEventListener("click", () => {
     journalModal.classList.remove("hidden");
     showList();
