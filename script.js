@@ -174,20 +174,20 @@ function drawRoads(){
     ctx.lineCap = "round";
     roads.forEach(road => {
         ctx.beginPath();
-        ctx.moveTo(canvas.width/2 + camera.x + road.x1, canvas.height/2 + camera.y + road.y1);
+        ctx.moveTo(canvas.width/2 + road.x1, canvas.height/2 + road.y1);
         if(road.bend){
             ctx.lineTo(
-                canvas.width/2+camera.x+road.bend.x,
-                canvas.height/2+camera.y+road.bend.y
+                canvas.width/2+road.bend.x,
+                canvas.height/2+road.bend.y
             );
         }
-        ctx.lineTo(canvas.width/2+camera.x+road.x2, canvas.height/2+camera.y+road.y2);
+        ctx.lineTo(canvas.width/2+road.x2, canvas.height/2+road.y2);
         if(!isRoadEndConnected(road)){
             let gradient = ctx.createLinearGradient(
-                canvas.width/2+camera.x+road.x1,
-                canvas.height/2 + camera.y + road.y1,
-                canvas.width / 2 + camera.x+road.x2,
-                canvas.height/2+camera.y+road.y2
+                canvas.width/2+road.x1,
+                canvas.height/2 + road.y1,
+                canvas.width / 2 + road.x2,
+                canvas.height/2+road.y2
             );
             gradient.addColorStop(0, "#555");
             gradient.addColorStop(1, "#111");
@@ -228,10 +228,10 @@ function drawBuildings(){
             ctx.shadowBlur = 18;
         }
         ctx.fillStyle = "#222";
-        ctx.fillRect(canvas.width/2 + camera.x + building.x, canvas.height/2 + camera.y + building.y, building.width, building.height);
+        ctx.fillRect(canvas.width/2 + building.x, canvas.height/2 + building.y, building.width, building.height);
         ctx.strokeStyle = building.color;
         ctx.lineWidth = 3;
-        ctx.strokeRect(canvas.width/2 + camera.x + building.x, canvas.height/2 + camera.y + building.y, building.width, building.height);
+        ctx.strokeRect(canvas.width/2 + building.x, canvas.height/2 + building.y, building.width, building.height);
         ctx.restore();
     }); 
 }
@@ -298,6 +298,12 @@ function screenToWorld(x, y){
         x: x-canvas.width/2-camera.x,
         y: y-canvas.height/2-camera.y
     };
+}
+function createWorld(){
+    const rootNode = new RoadNode(0,0);
+    roadNodes.push(rootNode);
+    player.x = rootNode.x;
+    player.y = rootNode.y;
 }
 function distance(x1, y1, x2, y2){
     return Math.hypot(x2 - x1, y2 - y1);
@@ -391,17 +397,30 @@ function stopDrag(){
 }
 function drawPlayer(){
     player.pulse += 0.05;
+
     const radius = player.radius + Math.sin(player.pulse) * 1.2;
-    const screenX = canvas.width/2;
-    const screenY = canvas.height/2;
+
+    const screenX = canvas.width/2 + player.x;
+    const screenY = canvas.height/2 + player.y;
+
     ctx.save();
+
     ctx.beginPath();
-    ctx.arc(screenX, screenY, radius, 0, Math.PI*2);
+    ctx.arc(
+        screenX,
+        screenY,
+        radius,
+        0,
+        Math.PI * 2
+    );
+
     ctx.fillStyle = "#00ff66";
     ctx.shadowColor = "#00ff44";
     ctx.shadowBlur = 18;
+
     ctx.fill();
     ctx.restore();
+    console.log(player.x, player.y, camera.x, camera.y);
 }
 function overlaps(x, y, w, h){
     for(const b of buildings){
@@ -546,10 +565,13 @@ function updateHoveredBuilding(e){
 function render(){
     ctx.fillStyle = "#111111";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.save();
+    ctx.translate(camera.x, camera.y);
     drawRoads();
     drawBuildings();
     drawBuildingLabels();
     drawPlayer();
+    ctx.restore();
     requestAnimationFrame(render);
 }
 noteButton.addEventListener("click", () => {
@@ -581,5 +603,7 @@ window.addEventListener("mouseup", stopDrag);
 emotionButtons[0].classList.add("selected");
 const rootNode = new RoadNode(0, 0);
 roadNodes.push(rootNode);
+player.x = 0;
+player.y = 0;
 createRoadNode(rootNode, -Math.PI/2, 120);
 render();
