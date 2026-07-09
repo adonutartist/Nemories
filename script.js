@@ -237,13 +237,38 @@ function drawBuildings(){
 }
 function createBuildingBranch(){
     const candidates = getExpandableNodes();
+    console.log("expandable:", candidates.length);
     if(candidates.length === 0) return null;
     const parent = randomChoice(candidates);
     const directions = [0, Math.PI/2, Math.PI, -Math.PI/2];
-    const angle = randomChoice(directions);
-    const node = createRoadNode(parent, angle, 120);
-    node.hasBuilding = true;
-    return{parent, node, angle};
+    const used = new Set();
+    for(const child of parent.children){
+        const dx = Math.round((child.x - parent.x)/120);
+        const dy = Math.round((child.y - parent.y)/120);
+        used.add(`${dx},${dy}`);
+    }
+    const directionMap = [
+        {angle: 0, key: "1,0"},
+        {angle: Math.PI/2, key: "0,1"},
+        {angle: Math.PI, key: "-1,0"},
+        {angle: -Math.PI/2, key: "0,-1"}
+    ];
+    const possible = directionMap.filter(d=>!used.has(d.key)).map(d=>d.angle);
+    console.log("possible directions:", possible.length);
+    console.log("parent:", parent.x, parent.y, "children:", parent.children.length, "possible:", possible.length);
+    if(possible.length === 0){
+        return createBuildingBranch();
+    }
+    const angle = randomChoice(possible);
+    const node1 = createRoadNode(parent, angle, 120);
+
+const node2 = createRoadNode(node1, angle, 120);
+
+return {
+    parent,
+    node: node2,
+    angle
+};
 }
 function drawBuildingLabels(){
     if(!hoverBuilding) return;
@@ -287,7 +312,10 @@ function createRoadNode(parent, angle, length){
     return node;
 }
 function getExpandableNodes(){
-    return roadNodes.filter(node => node.children.length < 4 && !node.hasBuilding && !node.hasBuildingBranch && !node.reserved);
+    return roadNodes.filter(node =>
+    node.children.length < 6 &&
+    !node.reserved
+);
 }
 function randomChoice(array){
     return array[Math.floor(Math.random() * array.length)];
@@ -319,15 +347,24 @@ function roadHitsBuilding(x1,y1,x2,y2){
     return false;
 }
 function buildingHitsRoad(x,y,w,h){
+    const padding = 15;
+
     for(const road of roads){
-        let minX = Math.min(road.x1, road.x2);
-        let maxX = Math.max(road.x1, road.x2);
-        let minY = Math.min(road.y1, road.y2);
-        let maxY = Math.max(road.y1, road.y2);
-        if(x<maxX && x+w>minX && y<maxY && y+h>minY){
+        let minX = Math.min(road.x1, road.x2) - padding;
+        let maxX = Math.max(road.x1, road.x2) + padding;
+        let minY = Math.min(road.y1, road.y2) - padding;
+        let maxY = Math.max(road.y1, road.y2) + padding;
+
+        if(
+            x < maxX &&
+            x+w > minX &&
+            y < maxY &&
+            y+h > minY
+        ){
             return true;
         }
     }
+
     return false;
 }
 function startDrag(e){
@@ -378,7 +415,7 @@ function overlaps(x, y, w, h){
     }
     return false;
 }
-function spawnBuilding(memoryIndex){
+function spawnBuilding(memoryIndex, retries = 0){
     const memory = memories[memoryIndex];
     const chars = memory.text.trim().length;
     let width, height;
@@ -410,7 +447,7 @@ function spawnBuilding(memoryIndex){
     if(!branch) return;
     const node = branch.node;
     node.hasBuilding = true;
-    node.reserved = true;
+    node.reserved = false;
     const perp = branch.angle + Math.PI/2;
     let side = Math.random()<0.5 ? -1 : 1;
     let distance = 100;
@@ -427,12 +464,24 @@ function spawnBuilding(memoryIndex){
         ){
             break;
         }
+        console.log("rejected:", distance, overlaps(x,y,width,height),buildingHitsRoad(x,y,width,height),roadHitsBuilding(node.x,node.y,roadEndX,roadEndY));
         distance += 50
         if(distance > 600){
-            node.reserved = false;
-            node.hasBuildingBranch = false;
-            roads.splice(roads.length - 1, 1);
-            return spawnBuilding(memoryIndex);
+            roads.pop();
+            const parent = node.parent;
+            const i = roadNodes.indexOf(node);
+            if(i !== -1){
+                roadNodes.splice(i, 1);
+            }
+            const c = parent.children.indexOf(node);
+            if(c !== -1){
+                parent.children.splice(c, 1);
+            }
+            if(retries >= 20){
+                console.log("building placement failed ;-;");
+                return;
+            }
+            return spawnBuilding(memoryIndex, retries + 1);
         }
     }
     let endX = node.x + Math.cos(perp)*distance*side;
