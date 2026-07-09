@@ -572,30 +572,52 @@ function drawStats(){
     pieCtx.clearRect(0,0,pieChart.width,pieChart.height);
     const counts = {};
     memories.forEach(memory => {
-        if(!counts[memory.emotion]){
-            counts[memory.emotion] = 0;
-        }
-        counts[memory.emotion]++;
-    });
+        counts[memory.emotion] =
+            (counts[memory.emotion] || 0) + 1;
+        });
     const total = memories.length;
     if(total === 0){
         pieCtx.fillStyle = "white";
         pieCtx.font = "18px Consolas";
-        pieCtx.fillText("No Nemories Yet... But you can change that!", 80, 150);
+        pieCtx.textAlign = "center";
+        pieCtx.fillText("No Nemories Yet... But you can change that!", 150, 150);
         return;
     }
-    let startAngle = 0;
-    Object.keys(counts).forEach(emotion => {
-        const amount = counts[emotion];
-        const slice = (amount/total)*Math.PI*2;
+    let start = -Math.PI/2;
+    Object.entries(counts).forEach(([emotion,count]) => {
+        const angle = count/total*Math.PI*2;
         pieCtx.beginPath();
         pieCtx.moveTo(150,150);
-        pieCtx.arc(150,150,120,startAngle,startAngle+slice);
+        pieCtx.arc(150,150,115,start+0.02,start+angle-0.02);
         pieCtx.closePath();
         pieCtx.fillStyle = emotionColors[emotion];
+        pieCtx.shadowColor = emotionColors[emotion];
+        pieCtx.shadowBlur = 10;
         pieCtx.fill();
-        startAngle += slice;
+        pieCtx.lineWidth = 2;
+        pieCtx.strokeStyle = "#111";
+        pieCtx.stroke();
+        const mid = start+angle/2;
+        const tx = 150+Math.cos(mid)*78;
+        const ty = 150+Math.sin(mid)*78;
+        pieCtx.shadowBlur = 0;
+        pieCtx.fillStyle = "white";
+        pieCtx.font = "bold 14px Consolas";
+        pieCtx.textAlign = "center";
+        pieCtx.fillText(Math.round(count/total*100)+"%",tx,ty);
+        start+=angle;
     });
+    pieCtx.beginPath();
+    pieCtx.arc(150,150,45,0,Math.PI*2);
+    pieCtx.fillStyle="#1b1b1b";
+    pieCtx.fill();
+    pieCtx.fillStyle="white";
+    pieCtx.font="bold 24px Consolas";
+    pieCtx.textAlign="center";
+    pieCtx.fillText(total,150,145);
+    pieCtx.font="12px Consolas";
+    pieCtx.fillStyle="#999";
+    pieCtx.fillText(total===1 ? "Nemory" : "Nemories", 150, 168);
     drawLegend(counts);
 }
 function drawLegend(counts){
@@ -603,9 +625,10 @@ function drawLegend(counts){
     Object.keys(counts).forEach(emotion=>{
         const div=document.createElement("div");
         div.className="legendItem";
+        const name = emotion.charAt(0).toUpperCase() + emotion.slice(1);
         div.innerHTML=`
         <span class="legendColor" style="background:${emotionColors[emotion]}"></span>
-        ${emotion}: ${counts[emotion]}`;
+        ${name}: ${counts[emotion]}`;
         statsLegend.appendChild(div);
     });
 }
