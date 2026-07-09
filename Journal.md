@@ -323,4 +323,6 @@ These additions will allow the world to grow continuously while keeping every me
 
 The current prototype demonstrates the first iteration of an explorable world with draggable camera controls, interactive buildings, dynamically sized memory buildings, dedicated branch roads, and the latest procedural road generation improvements.
 
-> *(Insert updated screenshots showing the draggable camera, building hover labels, dynamic building sizes, dedicated branch roads, and the latest procedural road prototype.)*
+> <img width="1920" height="1080" alt="Screenshot (121)" src="https://github.com/user-attachments/assets/3b72103e-e77b-473f-93de-0fdf2d5d30f9" /><img width="1920" height="1080" alt="Screenshot (123)" src="https://github.com/user-attachments/assets/7a99188b-1927-48d9-8b96-6facd7ced5b6" /><img width="1920" height="1080" alt="Screenshot (122)" src="https://github.com/user-attachments/assets/9f406fb4-d459-47b1-b13f-364bd074184c" />
+
+---
