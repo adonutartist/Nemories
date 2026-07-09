@@ -272,8 +272,8 @@ return {
 }
 function drawBuildingLabels(){
     if(!hoverBuilding) return;
-    const x = canvas.width/2 + camera.x + hoverBuilding.x + hoverBuilding.width/2;
-    const y = canvas.height/2 + camera.y + hoverBuilding.y - 12;
+    const x = canvas.width/2 + hoverBuilding.x + hoverBuilding.width/2;
+    const y = canvas.height/2 + hoverBuilding.y - 12;
     const text = `Memory #${hoverBuilding.memoryID + 1}`;
     ctx.save();
     ctx.font = "15px Consolas";
@@ -566,7 +566,10 @@ function render(){
     ctx.fillStyle = "#111111";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.save();
+    ctx.translate(canvas.width/2, canvas.height/2);
+    ctx.scale(camera.zoom, camera.zoom);
     ctx.translate(camera.x, camera.y);
+    ctx.translate(-canvas.width/2, -canvas.height/2);
     drawRoads();
     drawBuildings();
     drawBuildingLabels();
@@ -596,6 +599,17 @@ closeJournal.addEventListener("click", () => {
 closeEditor.addEventListener("click", () => {
     journalModal.classList.add("hidden");
 })
+canvas.addEventListener("wheel", e => {
+    e.preventDefault();
+    const zoomSpeed = 0.1;
+    if(e.deltaY < 0){
+        camera.zoom += zoomSpeed;
+    }
+    else{
+        camera.zoom -= zoomSpeed;
+    }
+    camera.zoom = Math.max(0.4, Math.min(camera.zoom, 3));
+});
 canvas.addEventListener("click", clickBuilding);
 canvas.addEventListener("mousedown", startDrag);
 window.addEventListener("mousemove", e => {dragCamera(e); updateHoveredBuilding(e);});
