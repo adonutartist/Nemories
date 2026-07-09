@@ -601,7 +601,10 @@ function drawStats(){
         const tx = 150+Math.cos(mid)*78;
         const ty = 150+Math.sin(mid)*78;
         pieCtx.shadowBlur = 0;
-        pieCtx.fillStyle = "white";
+        const color = emotionColors[emotion];
+        const rgb = color.match(/\w\w/g).map(v => parseInt(v, 16));
+        const brightness = (rgb[0]*299 + rgb[1]*587 + rgb[2]*114)/1000;
+        pieCtx.fillStyle = brightness > 160 ? "#111" : "#fff";
         pieCtx.font = "bold 14px Consolas";
         pieCtx.textAlign = "center";
         pieCtx.fillText(Math.round(count/total*100)+"%",tx,ty);
