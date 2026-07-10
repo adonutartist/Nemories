@@ -20,13 +20,14 @@ function createWidget(){
         return;
     }
     widgetWindow = new BrowserWindow({
-        width: 270,
-        height: 270,
+        width: 300,
+        height: 300,
         frame: false,
         transparent: true,
         resizable: false,
         alwaysOnTop: true,
         skipTaskbar: true,
+        hasShadow: false,
         webPreferences: {nodeIntegration:true, contextIsolation:false}
     });
     widgetWindow.loadFile("widget.html");
@@ -38,6 +39,12 @@ ipcMain.on("open-widget",()=>{
     console.log("open-widget");
     createWidget();
 });
+ipcMain.on("close-widget", () => {
+    if(widgetWindow){
+        widgetWindow.close();
+        widgetWindow = null;
+    }
+})
 app.whenReady().then(()=>{
     createWindow();
 });
