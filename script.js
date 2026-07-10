@@ -1,5 +1,6 @@
 const { BrowserWindow } = require("electron");
 const {ipcRenderer} = require("electron");
+const hoverSfx = new Audio("hoversfx.wav");
 const canvas = document.getElementById("worldCanvas");
 const ctx = canvas.getContext("2d");
 const noteButton = document.getElementById("noteButton");
@@ -20,7 +21,13 @@ const desktopWidget = document.getElementById("desktopWidget");
 const pieChart = document.getElementById("pieChart");
 const pieCtx = pieChart.getContext("2d");
 const statsLegend = document.getElementById("statsLegend");
+const aboutButton = document.getElementById("aboutButton");
+const aboutModal = document.getElementById("aboutModal");
+const closeAbout = document.getElementById("closeAbout");
+const {shell} = require("electron");
+const githubButton = document.getElementById("githubButton");
 let memories = JSON.parse(localStorage.getItem("memories")) || [];
+let lastHoveredElement = null;
 let selectedEmotion = "happy";
 let editIndex = null;
 let hoverBuilding = null;
@@ -39,6 +46,10 @@ desktopWidget.onclick=()=>{
     console.log("open widget button clicked");
     ipcRenderer.send("open-widget");
 };
+function playHoverSound(){
+    hoverSfx.currentTime = 0;
+    hoverSfx.play().catch(()=>{});
+}
 function showList(){
     memoryListView.classList.remove("hidden");
     memoryEditorView.classList.add("hidden");
@@ -758,6 +769,15 @@ pieChart.addEventListener("mousemove", e => {
     }
     drawStats();
 });
+aboutButton.addEventListener("click",()=>{
+    aboutModal.classList.remove("hidden");
+});
+closeAbout.addEventListener("click",()=>{
+    aboutModal.classList.add("hidden");
+});
+githubButton.addEventListener("click",()=>{
+    shell.openExternal("https://github.com/adonutartist/Nemories");
+})
 pieChart.addEventListener("mouseleave", () => {
     hoveredSlice = -1;
     drawStats();
@@ -804,6 +824,19 @@ const rootNode = new RoadNode(0, 0);
 roadNodes.push(rootNode);
 player.x = 0;
 player.y = 0;
+document.addEventListener("mousemove",e=>{
+    const target = e.target.closest(
+        "button, .emotion, .memoryCard, #addMemory"
+    );
+    if(!target){
+        lastHoveredElement=null;
+        return;
+    }
+    if(target!==lastHoveredElement){
+        lastHoveredElement=target;
+        playHoverSound();
+    }
+})
 createRoadNode(rootNode, -Math.PI/2, 120);
 loadWorld();
 render();
