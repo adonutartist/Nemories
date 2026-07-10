@@ -21,6 +21,7 @@ let memories = JSON.parse(localStorage.getItem("memories")) || [];
 let selectedEmotion = "happy";
 let editIndex = null;
 let hoverBuilding = null;
+let hoveredSlice = -1;
 const emotionColors = {
     happy:"#47ff6b",
     excited:"#ffe84d",
@@ -576,6 +577,7 @@ function drawStats(){
             (counts[memory.emotion] || 0) + 1;
         });
     const total = memories.length;
+    const radius = 120;
     if(total === 0){
         pieCtx.fillStyle = "white";
         pieCtx.font = "18px Consolas";
@@ -584,31 +586,61 @@ function drawStats(){
         return;
     }
     let start = -Math.PI/2;
-    Object.entries(counts).forEach(([emotion,count]) => {
-        const angle = count/total*Math.PI*2;
+    let startAngle = 0;
+    let index = 0;
+    Object.keys(counts).forEach(emotion => {
+        const amount = counts[emotion];
+        const slice = amount/total*Math.PI*2;
+        const mid = startAngle + slice/2;
+        const offset = index === hoveredSlice ? 15 : 0;
+        const cx = 150 + Math.cos(mid) * offset;
+        const cy = 150 + Math.sin(mid) * offset;
         pieCtx.beginPath();
-        pieCtx.moveTo(150,150);
-        pieCtx.arc(150,150,115,start+0.02,start+angle-0.02);
+        pieCtx.moveTo(cx, cy);
+        pieCtx.arc(cx, cy, radius, startAngle, startAngle + slice);
         pieCtx.closePath();
         pieCtx.fillStyle = emotionColors[emotion];
-        pieCtx.shadowColor = emotionColors[emotion];
-        pieCtx.shadowBlur = 10;
+        if(index === hoveredSlice){
+            pieCtx.shadowColor = emotionColors[emotion];
+            pieCtx.shadowBlur = 18;
+        }
+        else{
+            pieCtx.shadowBlur = 0;
+        }
         pieCtx.fill();
-        pieCtx.lineWidth = 2;
-        pieCtx.strokeStyle = "#111";
-        pieCtx.stroke();
-        const mid = start+angle/2;
-        const tx = 150+Math.cos(mid)*78;
-        const ty = 150+Math.sin(mid)*78;
-        pieCtx.shadowBlur = 0;
-        const color = emotionColors[emotion];
-        const rgb = color.match(/\w\w/g).map(v => parseInt(v, 16));
-        const brightness = (rgb[0]*299 + rgb[1]*587 + rgb[2]*114)/1000;
-        pieCtx.fillStyle = brightness > 160 ? "#111" : "#fff";
-        pieCtx.font = "bold 14px Consolas";
-        pieCtx.textAlign = "center";
-        pieCtx.fillText(Math.round(count/total*100)+"%",tx,ty);
-        start+=angle;
+        if(index === hoveredSlice){
+            const percent = Math.round(amount/total*100);
+            if(percent < 6){
+                const x1 = cx + Math.cos(mid) * radius;
+                const y1 = cy + Math.sin(mid) * radius;
+                const x2 = cx + Math.cos(mid) * (radius + 18);
+                const y2 = cy + Math.sin(mid) * (radius + 18);
+                pieCtx.strokeStyle = "#ccc";
+                pieCtx.lineWidth = 2;
+                pieCtx.beginPath();
+                pieCtx.moveTo(x1,y1);
+                pieCtx.lineTo(x2,y2);
+                pieCtx.stroke();
+                pieCtx.fillStyle = "#fff";
+                pieCtx.font = "bold 16px Consolas";
+                pieCtx.textAlign = Math.cos(mid) > 0 ? "left" : "right";
+                pieCtx.fillText(percent + "%", x2+(Math.cos(mid) > 0 ? 8 : -8), y2);
+                startAngle += slice;
+                return;
+            }
+            const color = emotionColors[emotion];
+            const rgb = color.match(/\w\w/g).map(v => parseInt(v, 16));
+            const brightness = (rgb[0]*299+rgb[1]*587+rgb[2]*114)/1000;
+            pieCtx.fillStyle = brightness > 170 ? "#111" : "#fff";
+            pieCtx.font = "bold 18px Consolas";
+            pieCtx.textAlign = "center";
+            pieCtx.textBaseline = "middle";
+            pieCtx.shadowBlur = 0;
+            const textRadius = radius * 0.62;
+            pieCtx.fillText(percent + "%", cx+Math.cos(mid)*textRadius, cy+Math.sin(mid)*textRadius);
+        }
+        startAngle += slice;
+        index++;
     });
     pieCtx.beginPath();
     pieCtx.arc(150,150,45,0,Math.PI*2);
@@ -657,6 +689,42 @@ statsButton.onclick = () => {
 closeStats.onclick = () => {
     statsModal.classList.add("hidden");
 };
+pieChart.addEventListener("mousemove", e => {
+    const rect = pieChart.getBoundingClientRect();
+    const x = e.clientX - rect.left - 150;
+    const y = e.clientY - rect.top - 150;
+    const distance = Math.hypot(x, y);
+    if(distance > 120){
+        hoveredSlice = -1;
+        drawStats();
+        return;
+    }
+    let angle = Math.atan2(y, x);
+    if(angle < 0)
+        angle += Math.PI*2;
+    const counts = {};
+    memories.forEach(m => {
+        counts[m.emotion] = (counts[m.emotion] || 0) +1;
+    });
+    const total = memories.length;
+    let start = 0;
+    let index = 0;
+    hoveredSlice = -1;
+    for(const emotion in counts){
+        const slice = counts[emotion]/total*Math.PI*2;
+        if(angle >= start && angle <= start + slice){
+            hoveredSlice = index;
+            break;
+        }
+        start += slice;
+        index++;
+    }
+    drawStats();
+});
+pieChart.addEventListener("mouseleave", () => {
+    hoveredSlice = -1;
+    drawStats();
+})
 noteButton.addEventListener("click", () => {
     journalModal.classList.remove("hidden");
     showList();
