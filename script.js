@@ -223,6 +223,12 @@ class Building{
         this.color = color;
         this.memoryID = memoryID;
     }
+    update(){
+        const memory = memories[this.memoryID];
+        if(memory){
+            this.color = emotionColors[memory.emotion];
+        }
+    }
 }
 function drawRoads(){
     ctx.lineWidth = 8;
@@ -832,6 +838,9 @@ moodChart.addEventListener("mouseleave",()=>{
 function render(){
     ctx.fillStyle = "#111111";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
+    buildings.forEach(building=>{
+        building.update();
+    })
     ctx.save();
     ctx.translate(canvas.width/2, canvas.height/2);
     ctx.scale(camera.zoom, camera.zoom);
