@@ -26,6 +26,13 @@ const aboutModal = document.getElementById("aboutModal");
 const closeAbout = document.getElementById("closeAbout");
 const {shell} = require("electron");
 const githubButton = document.getElementById("githubButton");
+const moodButton = document.getElementById("moodButton");
+const moodModal = document.getElementById("moodModal");
+const closeMood = document.getElementById("closeMood");
+const moodChart = document.getElementById("moodChart");
+const moodCtx = moodChart.getContext("2d");
+let hoveredMoodPoint = null;
+let moodHistoryCache = [];
 let memories = JSON.parse(localStorage.getItem("memories")) || [];
 let lastHoveredElement = null;
 let selectedEmotion = "happy";
@@ -42,10 +49,31 @@ const emotionColors = {
     angry:"#ff5050",
     tired:"#a78bfa"
 };
+const emotionScores = {
+    loving: 3,
+    happy: 2,
+    excited: 2,
+    neutral: 0,
+    tired: -1,
+    sad: -2,
+    angry: -3
+};
 desktopWidget.onclick=()=>{
     console.log("open widget button clicked");
     ipcRenderer.send("open-widget");
 };
+function getMoodHistory(){
+    const days = {};
+    memories.forEach(memory=>{
+        const day = memory.date.slice(0,10);
+        if(!days[day]){
+            days[day]={total:0,count:0};
+        }
+        days[day].total+=emotionScores[memory.emotion];
+        days[day].count++;
+    });
+    return Object.keys(days).sort().map(day=>{return{day, mood: days[day].total/days[day].count, count:days[day].count};});
+}
 function playHoverSound(){
     hoverSfx.currentTime = 0;
     hoverSfx.play().catch(()=>{});
@@ -117,9 +145,11 @@ emotionButtons.forEach(button => {
 saveMemory.onclick = () => {
     let data = {
         text: memoryText.value,
-        emotion: selectedEmotion
+        emotion: selectedEmotion,
+        date: new Date().toISOString()
     };
     if(editIndex !== null){
+        data.date = memories[editIndex].date;
         memories[editIndex] = data;
     }
     else{
@@ -690,6 +720,115 @@ function drawLegend(counts){
         statsLegend.appendChild(div);
     });
 }
+function drawMoodGraph(){
+    moodCtx.clearRect(0,0,moodChart.width,moodChart.height);
+    const history = getMoodHistory();
+    moodHistoryCache=history;
+    console.log(history);
+    if(history.length===0){
+        moodCtx.fillStyle="white";
+        moodCtx.font = "18px Consolas";
+        moodCtx.textAlign="center";
+        moodCtx.fillText("No Mood Data Yet...",moodChart.width/2,moodChart.height/2);
+        return;
+    }
+    const padding = 50;
+    const width = moodChart.width-padding*2;
+    const height = moodChart.height-padding*2;
+    moodCtx.strokeStyle="#333";
+    moodCtx.lineWidth=1;
+    for(let i=0;i<=6;i++){
+        let y = padding+(height/6)*i;
+        moodCtx.beginPath();
+        moodCtx.moveTo(padding,y);
+        moodCtx.lineTo(padding+width,y);
+        moodCtx.stroke();
+    }
+    function moodToY(value){
+        return padding+((3-value)/6)*height;
+    }
+    moodCtx.beginPath();
+    const graphPoints = [];
+    history.forEach((point,index)=>{
+        const x =padding+(index/(history.length-1 || 1))*width;
+        const y = moodToY(point.mood);
+        if(index===0){
+            moodCtx.moveTo(x,y);
+        }
+        else{
+            moodCtx.lineTo(x,y);
+        }
+    });
+    moodCtx.strokeStyle="#ffffff";
+    moodCtx.lineWidth=3;
+    moodCtx.shadowColor="#ffffff";
+    moodCtx.shadowBlur=12;
+    moodCtx.stroke();
+    moodCtx.shadowBlur=0;
+    history.forEach((point,index)=>{
+        const x =padding+(index/(history.length-1 || 1))*width;
+        const y =moodToY(point.mood);
+        graphPoints.push({x,y,data:point});
+        let color;
+        if(point.mood>1){
+            color="#47ff6b";
+        }
+        else if(point.mood<-1){
+            color="#66c8ff";
+        }
+        else{
+            color="#ffffff";
+        }
+        moodCtx.beginPath();
+        const size = (index===hoveredMoodPoint) ? 10 : 6;
+        moodCtx.arc(x,y,size,0,Math.PI*2);
+        moodCtx.fillStyle=color;
+        moodCtx.shadowColor=color;
+        moodCtx.shadowBlur=10;
+        moodCtx.fill();
+        moodCtx.shadowBlur=0;
+    });
+    moodCtx.fillStyle="#999";
+    moodCtx.font="12px Consolas";
+    moodCtx.textAlign="right";
+    moodCtx.fillText("+3",padding-10,moodToY(3)+5);
+    moodCtx.fillText("0",padding-10,moodToY(-3)+5);
+}
+moodChart.addEventListener("mousemove",e=>{
+    const rect = moodChart.getBoundingClientRect();
+    const scaleX = moodChart.width / rect.width;
+    const scaleY = moodChart.height / rect.height;
+    const mouseX = (e.clientX - rect.left) * scaleX;
+    const mouseY = (e.clientY - rect.top) * scaleY;
+    const history=moodHistoryCache;
+    const padding = 60;
+    const width = moodChart.width-padding*2;
+    const height = moodChart.height-padding*2;
+    function moodToY(value){
+        return padding + ((3-value)/6)*height;
+    }
+    hoveredMoodPoint=null;
+    history.forEach((point,index)=>{
+        const x = history.length===1 ? moodChart.width/2 : padding+(index/(history.length-1))*width;
+        const y = moodToY(point.mood);
+        const distance=Math.sqrt((mouseX-x)**2+(mouseY-y)**2);
+        if(distance<12){
+            hoveredMoodPoint=index;
+            document.getElementById("moodInfo").innerHTML=
+            `<b>${point.day}</b><br>
+            Average Mood: ${point.mood.toFixed(2)}; Nemories: ${point.count}`;
+        }
+    });
+    if(hoveredMoodPoint===null){
+        document.getElementById("moodInfo").innerHTML = "Hover over a point...";
+    }
+    drawMoodGraph();
+});
+moodChart.addEventListener("mouseleave",()=>{
+    hoveredMoodPoint=null;
+    document.getElementById("moodInfo").innerHTML="Hover over a point...";
+    drawMoodGraph;
+})
 function render(){
     ctx.fillStyle = "#111111";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -726,8 +865,16 @@ function loadWorld(){
     if(!save) return;
     memories.length = 0;
     memories.push(...save.memories);
-    camera.x = save.camera.x;
-    camera.y = save.camera.y;
+    memories.forEach(memory=>{
+        if(!memory.date){
+            memory.date=new Date().toISOString();
+        }
+    });
+    if(save.camera){
+        camera.x = save.camera.x;
+        camera.y = save.camera.y;
+    }
+    saveWorld();
     rebuildWorld();
 }
 statsButton.onclick = () => {
@@ -769,6 +916,13 @@ pieChart.addEventListener("mousemove", e => {
     }
     drawStats();
 });
+moodButton.onclick=()=>{
+    moodModal.classList.remove("hidden");
+    drawMoodGraph();
+};
+closeMood.onclick=()=>{
+    moodModal.classList.add("hidden");
+}
 aboutButton.addEventListener("click",()=>{
     aboutModal.classList.remove("hidden");
 });

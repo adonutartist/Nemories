@@ -12,6 +12,7 @@
         </button>
         <div id="topButtons">
             <button id="statsButton">Stats</button>
+            <button id="moodButton">Graph</button>
             <button id="noteButton">Notes</button>
         </div>
     </div>
@@ -78,6 +79,16 @@
             <canvas id="pieChart" width="300" height="300"></canvas>
             <button id="desktopWidget">I wanna be a cute lil desktop widget :3</button>
             <div id="statsLegend"></div>
+        </div>
+    </div>
+    <div id="moodModal" class="hidden">
+        <div id="moodWindow">
+            <div id="moodHeader">
+                <h2>Mood Graph</h2>
+                <button id="closeMood">✕</button>
+            </div>
+            <canvas id="moodChart" width="650" height="350"></canvas>
+            <div id="moodInfo">Hover over a point...</div>
         </div>
     </div>
     <div id="journalModal" class="hidden">
