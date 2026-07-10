@@ -1,3 +1,5 @@
+const { BrowserWindow } = require("electron");
+const {ipcRenderer} = require("electron");
 const canvas = document.getElementById("worldCanvas");
 const ctx = canvas.getContext("2d");
 const noteButton = document.getElementById("noteButton");
@@ -14,6 +16,7 @@ const closeEditor = document.getElementById("closeEditor");
 const statsButton = document.getElementById("statsButton");
 const statsModal = document.getElementById("statsModal");
 const closeStats = document.getElementById("closeStats");
+const desktopWidget = document.getElementById("desktopWidget");
 const pieChart = document.getElementById("pieChart");
 const pieCtx = pieChart.getContext("2d");
 const statsLegend = document.getElementById("statsLegend");
@@ -22,6 +25,7 @@ let selectedEmotion = "happy";
 let editIndex = null;
 let hoverBuilding = null;
 let hoveredSlice = -1;
+let widgetWindow = null;
 const emotionColors = {
     happy:"#47ff6b",
     excited:"#ffe84d",
@@ -30,6 +34,10 @@ const emotionColors = {
     sad:"#66c8ff",
     angry:"#ff5050",
     tired:"#a78bfa"
+};
+desktopWidget.onclick=()=>{
+    console.log("open widget button clicked");
+    ipcRenderer.send("open-widget");
 };
 function showList(){
     memoryListView.classList.remove("hidden");
@@ -582,7 +590,10 @@ function drawStats(){
         pieCtx.fillStyle = "white";
         pieCtx.font = "18px Consolas";
         pieCtx.textAlign = "center";
-        pieCtx.fillText("No Nemories Yet... But you can change that!", 150, 150);
+        pieCtx.fillText("No Nemories Yet...",150,140);
+        pieCtx.font = "16px Consolas";
+        pieCtx.fillStyle = "#aaa";
+        pieCtx.fillText("But you can change that!",150,170);
         return;
     }
     let start = -Math.PI/2;
@@ -746,7 +757,7 @@ closeJournal.addEventListener("click", () => {
 });
 closeEditor.addEventListener("click", () => {
     journalModal.classList.add("hidden");
-})
+});
 canvas.addEventListener("wheel", e => {
     e.preventDefault();
     const zoomSpeed = 0.1;

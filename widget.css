@@ -1,0 +1,18 @@
+body{
+    margin: 0;
+    background: transparent;
+    overflow: hidden;
+}
+
+#widget{
+    width: 250px;
+    height: 250px;
+    border-radius: 20px;
+    background: rgba(20, 20, 20, .72);
+    border: 1px solid rgba(255, 255, 255, .15);
+    box-shadow: inset 0 1px rgba(255, 255, 255, .08),
+                0 0 14px rgba(255, 255, 255, .05);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}

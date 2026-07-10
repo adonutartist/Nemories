@@ -4,7 +4,7 @@
   "description": "An archive, an organizer for all your memories or youn call em Nemories i guess :p",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electronmon ."
   },
   "repository": {
     "type": "git",
@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/adonutartist/Nemories#readme",
   "devDependencies": {
-    "electron": "^43.0.0"
+    "electron": "^43.0.0",
+    "electronmon": "^2.0.4"
   }
 }
