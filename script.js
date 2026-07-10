@@ -186,7 +186,7 @@ const roads = [];
 const buildings = [];
 const intersections = [];
 const roadNodes = [];
-const player = {x: 0, y: 0, radius: 6, pulse: 0};
+const player = {x: 0, y: 0, radius: 6, pulse: 0, speed: 2.5};
 class Intersection{
     constructor(x, y){
         this.x = x;
@@ -229,6 +229,82 @@ class Building{
             this.color = emotionColors[memory.emotion];
         }
     }
+}
+const keys = {};
+window.addEventListener("keydown",e=>{
+    keys[e.key.toLowerCase()]=true;
+});
+window.addEventListener("keyup",e=>{
+    keys[e.key.toLowerCase()]=false;
+});
+function updatePlayer(){
+    let dx = 0;
+    let dy = 0;
+    if(keys["w"]){
+        dy -= player.speed;
+    }
+    if(keys["s"]){
+        dy += player.speed;
+    }
+    if(keys["a"]){
+        dx -= player.speed;
+    }
+    if(keys["d"]){
+        dx += player.speed;
+    }
+    if(dx===0 && dy===0)
+        return;
+    const newX = player.x+dx;
+    const newY = player.y+dy;
+    if(isOnRoad(newX,newY)){
+        player.x=newX;
+        player.y=newY;
+    }
+}
+function isOnRoad(x,y){
+    const roadWidth = 35;
+    for(const road of roads){
+        let points=[];
+        if(road.bend){
+            points=[{x:road.x1,y:road.y1},road.bend,{x:road.x2,y:road.y2}];
+        }
+        else{
+            points=[{x:road.x1,y:road.y1},{x:road.x2,y:road.y2}];
+        }
+        for(let i=0;i<points.length-1;i++){
+            const dist = pointToLineDistance(x,y,points[i].x,points[i].y,points[i+1].x,points[i+1].y);
+            if(dist<roadWidth){
+                return true;
+            }
+        }
+    }
+    return false;
+}
+function pointToLineDistance(px,py,x1,y1,x2,y2){
+    const A = px-x1;
+    const B = py-y1;
+    const C = x2-x1;
+    const D = y2-y1;
+    const dot = A*C+B*D;
+    const len = C*C+D*D;
+    let param = dot/len;
+    let xx;
+    let yy;
+    if(param<0){
+        xx=x1;
+        yy=y1;
+    }
+    else if(param>1){
+        xx=x2;
+        yy=y2;
+    }
+    else{
+        xx=x1+param*C;
+        yy=y1+param*D;
+    }
+    const dx=px-xx;
+    const dy=py-yy;
+    return Math.sqrt(dx*dx+dy*dy);
 }
 function drawRoads(){
     ctx.lineWidth = 8;
@@ -836,6 +912,7 @@ moodChart.addEventListener("mouseleave",()=>{
     drawMoodGraph;
 })
 function render(){
+    updatePlayer();
     ctx.fillStyle = "#111111";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     buildings.forEach(building=>{
