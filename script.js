@@ -115,6 +115,7 @@ saveMemory.onclick = () => {
         memories.push(data);
     }
     localStorage.setItem("memories", JSON.stringify(memories));
+    window.dispatchEvent(new Event("storage"));
     if(editIndex === null){
         spawnBuilding(memories.length-1);
     }
