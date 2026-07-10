@@ -114,7 +114,7 @@ saveMemory.onclick = () => {
     else{
         memories.push(data);
     }
-    localStorage.setItem("memories", JSON.stringify(memories));
+    saveWorld();
     window.dispatchEvent(new Event("storage"));
     if(editIndex === null){
         spawnBuilding(memories.length-1);
@@ -694,6 +694,31 @@ function render(){
     ctx.restore();
     requestAnimationFrame(render);
 }
+function rebuildWorld(){
+    buildings.length = 0;
+    roads.length = 0;
+    roadNodes.length = 0;
+    const rootNode = new RoadNode(0,0);
+    roadNodes.push(rootNode);
+    player.x = 0;
+    player.y = 0;
+    createRoadNode(rootNode, -Math.PI/2, 120);
+    memories.forEach((memory,index)=>{
+        spawnBuilding(index);
+    });
+}
+function saveWorld(){
+    localStorage.setItem("nemoriesSave",JSON.stringify({memories,camera}));
+}
+function loadWorld(){
+    const save = JSON.parse(localStorage.getItem("nemoriesSave"));
+    if(!save) return;
+    memories.length = 0;
+    memories.push(...save.memories);
+    camera.x = save.camera.x;
+    camera.y = save.camera.y;
+    rebuildWorld();
+}
 statsButton.onclick = () => {
     statsModal.classList.remove("hidden");
     drawStats();
@@ -780,4 +805,5 @@ roadNodes.push(rootNode);
 player.x = 0;
 player.y = 0;
 createRoadNode(rootNode, -Math.PI/2, 120);
+loadWorld();
 render();

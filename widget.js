@@ -15,7 +15,8 @@ const emotionColors = {
 };
 function drawWidgetChart(){
     ctx.clearRect(0,0,canvas.width,canvas.height);
-    const memories = JSON.parse(localStorage.getItem("memories")) || [];
+    const save = JSON.parse(localStorage.getItem("nemoriesSave")) || [];
+    const memories = save.memories || [];
     const counts = {};
     memories.forEach(memory => {
         counts[memory.emotion] = (counts[memory.emotion] || 0)+1;
