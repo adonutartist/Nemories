@@ -326,3 +326,156 @@ The current prototype demonstrates the first iteration of an explorable world wi
 > <img width="1920" height="1080" alt="Screenshot (121)" src="https://github.com/user-attachments/assets/3b72103e-e77b-473f-93de-0fdf2d5d30f9" /><img width="1920" height="1080" alt="Screenshot (123)" src="https://github.com/user-attachments/assets/7a99188b-1927-48d9-8b96-6facd7ced5b6" /><img width="1920" height="1080" alt="Screenshot (122)" src="https://github.com/user-attachments/assets/9f406fb4-d459-47b1-b13f-364bd074184c" />
 
 ---
+
+# Devlog #3
+
+**Date:** July 9, 2026 10:00 PM to July 10, 2026 3:15 AM
+
+---
+
+# Overview
+
+Today I worked on turning Nemories from a functional prototype into something that feels much more like a complete desktop application. The largest breakthrough came from finally solving the procedural city generation bottleneck that had been preventing larger cities from growing. After many iterations of debugging road generation, and node expansion, the city can now continue expanding indefinitely without becoming trapped after only 5 memories. Alongside these backend improvements, I also focused on making the application significantly more enjoyable to explore by adding zoom controls, a fixed player marker, and an entirely new statistics window capable of visualising emotional trends using an interactive pie chart.
+
+---
+
+# Infinite City Generation
+
+One of the biggest milestones so far was successfully removing the procedural generation deadlock that caused city growth to stop after only a few buildings.
+After restructuring how expandable nodes are selected and how building branches are generated, the city is now capable of continuing to expand as more memories are added.
+
+Major improvements include:
+
+* Successfully removed the previous generation bottleneck.
+* Expandable nodes now continue increasing as the city grows.
+* Road branches no longer become permanently exhausted after a few memories.
+* Improved branch selection logic for future expansion.
+* Better handling of node reservation during generation.
+* Building branch creation now behaves far more reliably.
+
+This marks the first version of a procedural city that can continuously grow alongside the user's memories.
+
+---
+
+# Camera & World Improvements
+
+Navigation received several upgrades to make exploring larger cities feel much more natural.
+
+New additions include:
+
+* Mouse wheel zooming.
+* Smooth zoom in and zoom out.
+
+These additions make the growing city significantly easier to inspect as more memories are created.
+
+---
+
+# Player Marker Improvements
+
+The player marker received a complete behavioural overhaul. Previously, the green marker remained locked to the centre of the screen, making it feel disconnected from the world itself.
+
+This was redesigned so that:
+
+* The player marker now exists as part of the world.
+* The marker remains attached to its original spawn location.
+* Camera movement no longer drags the player marker across the screen.
+* Movement calculations were corrected so the marker remains perfectly aligned with surrounding roads.
+
+This small change doesn't do much but the feeling that the player exists inside the city rather than simply viewing it is better I guess?
+
+---
+
+# Statistics Window
+
+A completely new statistics system was introduced to help visualise emotional trends across stored memories.
+
+New interface additions include:
+
+* Dedicated Statistics button in the title bar.
+* Separate Statistics window.
+* Emotion distribution pie chart.
+* Dynamic legend showing memory totals.
+* Automatic colour matching using each emotion's existing colour palette.
+* Live updates whenever memories are added.
+
+The statistics window provides an entirely different perspective on the user's journal by displaying emotional balance rather than individual memories.
+
+---
+
+# Interactive Pie Chart
+
+The statistics chart was expanded beyond a simple static graph into an interactive visualisation.
+
+New features include:
+
+* Hover detection for every slice.
+* Hovered slices smoothly pop outward.
+* Percentage labels appear only while hovering.
+* Automatic percentage calculation.
+* Percentage text colour changes based on slice brightness for improved readability.
+* Small percentage slices display external percentage instead of cramped labels.
+* Central counter displaying the total number of Nemories stored.
+
+These interactions make the statistics page feel much more polished while remaining easy to read.
+
+---
+
+# Bug Fixes
+
+A heck ton of time was spent chasing down procedural generation bugs and UI issues.
+
+Some of the larger fixes included:
+
+* Fixed procedural generation stopping after only a few buildings.
+* Corrected expandable node selection.
+* Fixed branch generation repeatedly selecting invalid nodes.
+* Fixed building placement deadlocks.
+* Corrected multiple collision detection issues.
+* Fixed player marker remaining attached to the camera.
+* Resolved player marker movement lag after camera changes.
+* Fixed statistics modal not opening.
+* Fixed pie chart rendering issues.
+* Corrected hover detection inside the chart.
+* Fixed percentage labels appearing on incorrect slices.
+* Corrected percentage text positioning.
+* Improved percentage readability on bright colours.
+
+Many of these fixes required numerous iterations before the systems finally behaved reliably.
+
+---
+
+# Current State
+
+Nemories has turned into a much more complete desktop experience!
+
+The application now supports:
+
+* Continuously expanding procedural cities.
+* Dynamic road network generation.
+* Reliable building placement.
+* Draggable camera controls.
+* Mouse wheel zooming.
+* Persistent player marker.
+* Interactive building labels.
+* Emotion based building colours.
+* Dynamic building sizes.
+* Statistics dashboard.
+* Interactive pie chart visualisation.
+
+The project is beginning to feel less like a prototype and more like a living world where every memory permanently contributes to the growth of a unique city.
+
+---
+
+# What's Next
+
+Honestly I don't know what more to add except the widget funtionality...
+
+---
+
+# Current Prototype Images
+
+The latest prototype showcases the first fully expanding procedural city, mouse wheel zoom controls, a world anchored player marker, and the new interactive statistics dashboard featuring a hoverable emotion pie chart.
+
+> <img width="1920" height="1080" alt="Screenshot (124)" src="https://github.com/user-attachments/assets/21453fa3-ad56-47d9-91f9-9067bedbb111" /><img width="1920" height="1080" alt="Screenshot (129)" src="https://github.com/user-attachments/assets/ea3247a7-de1f-43a7-b018-fa1405c9a525" /><img width="1920" height="1080" alt="Screenshot (128)" src="https://github.com/user-attachments/assets/2fcc8b07-b4bc-4416-a021-3359ff79a821" /><img width="1920" height="1080" alt="Screenshot (127)" src="https://github.com/user-attachments/assets/f2e973f4-5ee9-4f95-8426-8f83ab29e47f" /><img width="1920" height="1080" alt="Screenshot (126)" src="https://github.com/user-attachments/assets/335c0e11-45ff-46dd-bc53-c2575a731c52" /><img width="1920" height="1080" alt="Screenshot (125)" src="https://github.com/user-attachments/assets/fadc5525-9706-4162-a4e2-cc8dc6ad3bd9" />
+
+---
