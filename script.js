@@ -1,8 +1,14 @@
 const { BrowserWindow } = require("electron");
 const {ipcRenderer} = require("electron");
 const hoverSfx = new Audio("hoversfx.wav");
+const pigeonImage = new Image();
+pigeonImage.src = "Pidgeon Sprite Sheet.png";
 const canvas = document.getElementById("worldCanvas");
 const ctx = canvas.getContext("2d");
+ctx.imageSmoothingEnabled = false;
+ctx.webkitImageSmoothingEnabled = false;
+ctx.mozImageSmoothingEnabled = false;
+ctx.msImageSmoothingEnabled = false;
 const noteButton = document.getElementById("noteButton");
 const journalModal = document.getElementById("journalModal");
 const saveMemory = document.getElementById("saveMemory");
@@ -186,6 +192,7 @@ let lastMouseX = 0;
 let lastMouseY = 0;
 const roads = [];
 const buildings = [];
+const birds=[];
 const intersections = [];
 const roadNodes = [];
 const player = {x: 0, y: 0, radius: 6, pulse: 0, speed: 2.5};
@@ -231,6 +238,56 @@ class Building{
             this.color = emotionColors[memory.emotion];
         }
     }
+}
+class Bird{
+    constructor(x,y){
+        this.x=x;
+        this.y=y;
+        this.vx=0;
+        this.vy=0;
+        this.frame=0;
+        this.timer = 0;
+        this.state="idle";
+        this.scale=.8+Math.random()*.4;
+        this.seed=Math.random()*1000;
+        this.targetX=x;
+        this.targetY=y;
+    }
+    update(){
+        this.timer++;
+        switch(this.state){
+            case "idle":this.frame=Math.floor(this.timer/10)%4;
+            if(this.timer>180+Math.random()*180){
+                this.state="eat";
+                this.timer=0;
+            }
+            break;
+            case "eat":this.frame=8+Math.floor(this.timer/8)%4;
+            if(this.timer>60){
+                this.state="idle";
+                this.timer=0;
+            }
+            break;
+            case "fly":this.frame=12+Math.floor(this.timer/4)%4;
+            this.x+=this.vx;
+            this.y+=this.vy;
+            if(this.x<-400||this.x>4000||this.y<-400||this.y>4000){
+                this.respawn();
+            }
+            break;
+        }
+    }
+    respawn(){
+        this.state="idle";
+        this.timer=0;
+        this.x=Math.random()*1200-600;
+        this.y=Math.random()*1200-600;
+    }
+}
+function drawBirds(){
+    birds.forEach(bird=>{
+        ctx.drawImage(pigeonImage,(bird.frame%4)*32,Math.floor(bird.frame/4)*32,32,32,bird.x,bird.y,64*bird.scale,64*bird.scale);
+    });
 }
 const keys = {};
 window.addEventListener("keydown",e=>{
@@ -932,11 +989,13 @@ function render(){
     buildings.forEach(building=>{
         building.update();
     })
+    birds.forEach(bird=>bird.update());
     ctx.save();
     ctx.translate(canvas.width/2, canvas.height/2);
     ctx.scale(camera.zoom, camera.zoom);
     ctx.translate(camera.x, camera.y);
     ctx.translate(-canvas.width/2, -canvas.height/2);
+    drawBirds();
     drawRoads();
     drawBuildings();
     drawBuildingLabels();
@@ -956,6 +1015,12 @@ function rebuildWorld(){
     memories.forEach((memory,index)=>{
         spawnBuilding(index);
     });
+    birds.length=0;
+    for(let i=0;i<6;i++){
+        const b=buildings[Math.floor(Math.random()*buildings.length)];
+        if(!b) continue;
+        birds.push(new Bird(b.x+Math.random()*80-40,b.y+b.height+25));
+    }
 }
 function saveWorld(){
     localStorage.setItem("nemoriesSave",JSON.stringify({memories,camera}));
@@ -1071,7 +1136,22 @@ canvas.addEventListener("wheel", e => {
 });
 canvas.addEventListener("click", clickBuilding);
 canvas.addEventListener("mousedown", startDrag);
-window.addEventListener("mousemove", e => {dragCamera(e); updateHoveredBuilding(e);});
+window.addEventListener("mousemove", e => {dragCamera(e); updateHoveredBuilding(e);
+    const rect = canvas.getBoundingClientRect();
+    const mouse = screenToWorld(e.clientX-rect.left,e.clientY-rect.top);
+    birds.forEach(bird=>{
+        if(bird.state==="fly") return;
+        const dx=mouse.x-bird.x;
+        const dy=mouse.y-bird.y;
+        if(Math.hypot(dx,dy)<90){
+            bird.state="fly";
+            bird.timer=0;
+            const angle = Math.atan2(bird.y-mouse.y,bird.x-mouse.x);
+            bird.vx=Math.cos(angle)*4;
+            bird.vy=Math.sin(angle)*4;
+        }
+    });
+});
 window.addEventListener("mouseup", stopDrag);
 emotionButtons[0].classList.add("selected");
 const rootNode = new RoadNode(0, 0);
