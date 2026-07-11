@@ -32,8 +32,7 @@ const closeMood = document.getElementById("closeMood");
 const moodChart = document.getElementById("moodChart");
 const moodCtx = moodChart.getContext("2d");
 const ROAD_WIDTH = 2;
-const grass = [];
-let windTime = 0;
+let cameraFollowing = false;
 let hoveredMoodPoint = null;
 let moodHistoryCache = [];
 let memories = JSON.parse(localStorage.getItem("memories")) || [];
@@ -233,71 +232,6 @@ class Building{
         }
     }
 }
-class Grass{
-    constructor(x,y){
-        this.x=x;
-        this.y=y;
-        this.height=6+Math.random()*8;
-        this.phase=Math.random()*Math.PI*2;
-        this.strength=0.3+Math.random()*0.5;
-    }
-}
-function grassHitsBuilding(x,y){
-    const padding = 8;
-    for(const building of buildings){
-        if(x>building.x-padding &&
-           x<building.x+buildings.width+padding &&
-           y>building.y-padding &&
-           y<building.y+buildings.height+padding
-        ){
-            return true;
-        }
-    }
-    return false;
-}
-function grassHitsRoad(x,y){
-    const padding = 16;
-    for(const road of roads){
-        if(!road.bend){
-            if(pointToLineDistance(x,y,road.x1,road.y1,road.x2,road.y2)<padding){
-                return true;
-            }
-        }
-        else{
-            if(pointToLineDistance(x,y,road.x1,road.y1,road.bend.x,road.bend.y)<padding){
-                return true;
-            }
-            if(pointToLineDistance(x,y,road.bend.x,road.bend.y,road.x2,road.y2)<padding){
-                return true;
-            }
-        }
-    }
-    return false;
-}
-function generateGrass(){
-    grass.length=0;
-    for(let i=0;i<7000;i++){
-        const x = Math.random()*4000-2000;
-        const y=Math.random()*4000-2000;
-        if(grassHitsBuilding(x,y))
-            continue;
-        if(grassHitsRoad(x,y))
-            continue;
-        grass.push(new Grass(x,y));
-    }
-}
-function drawGrass(){
-    windTime += 0.02;
-    ctx.strokeStyle="#3d9b44";
-    ctx.lineWidth=2;
-    grass.forEach(blade=>{
-        const sway = Math.sin(windTime+blade.phase+blade.x*0.01)*blade.strength*4;
-        ctx.beginPath();
-        ctx.moveTo(canvas.width/2+blade.x,canvas.height/2+blade.y);
-        ctx.lineTo(canvas.width/2+blade.x+sway,canvas.height/2+blade.y-blade.height);
-        ctx.stroke();
-    });
-}
 const keys = {};
 window.addEventListener("keydown",e=>{
     keys[e.key.toLowerCase()]=true;
@@ -320,19 +254,22 @@ function updatePlayer(){
     if(keys["d"]){
         dx += player.speed;
     }
-    if(dx===0 && dy===0)
-        return;
+    if(dx===0 && dy===0){
+        return false;
+    }
+    cameraFollowing=true;
+    let moved = false
     const nextX = player.x+dx;
     const nextY = player.y+dy;
     if(isOnRoad(nextX,player.y)){
         player.x=nextX;
+        moved = true;
     }
     if(isOnRoad(player.x,nextY)){
         player.y=nextY;
+        moved=true;
     }
-    const followSpeed = 0.12;
-    camera.x+=(-player.x-camera.x)*followSpeed;
-    camera.y+=(-player.y-camera.y)*followSpeed;
+    return moved;
 }
 function isOnRoad(x,y){
     for(const road of roads){
@@ -586,6 +523,7 @@ function buildingHitsRoad(x,y,w,h){
 }
 function startDrag(e){
     dragging = true;
+    cameraFollowing = false;
     dragDistance = 0;
     lastMouseX = e.clientX;
     lastMouseY = e.clientY;
@@ -984,7 +922,11 @@ moodChart.addEventListener("mouseleave",()=>{
     drawMoodGraph;
 })
 function render(){
-    updatePlayer();
+    const moved = updatePlayer();
+    if(cameraFollowing){
+        camera.x += (-player.x - camera.x) * 0.12;
+        camera.y += (-player.y - camera.y) * 0.12;
+    }
     ctx.fillStyle = "#111111";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     buildings.forEach(building=>{
@@ -995,7 +937,6 @@ function render(){
     ctx.scale(camera.zoom, camera.zoom);
     ctx.translate(camera.x, camera.y);
     ctx.translate(-canvas.width/2, -canvas.height/2);
-    drawGrass();
     drawRoads();
     drawBuildings();
     drawBuildingLabels();
@@ -1035,7 +976,6 @@ function loadWorld(){
     }
     saveWorld();
     rebuildWorld();
-    generateGrass();
 }
 statsButton.onclick = () => {
     statsModal.classList.remove("hidden");
