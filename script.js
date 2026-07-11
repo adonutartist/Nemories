@@ -31,6 +31,7 @@ const moodModal = document.getElementById("moodModal");
 const closeMood = document.getElementById("closeMood");
 const moodChart = document.getElementById("moodChart");
 const moodCtx = moodChart.getContext("2d");
+const ROAD_WIDTH = 2;
 let hoveredMoodPoint = null;
 let moodHistoryCache = [];
 let memories = JSON.parse(localStorage.getItem("memories")) || [];
@@ -254,26 +255,30 @@ function updatePlayer(){
     }
     if(dx===0 && dy===0)
         return;
-    const newX = player.x+dx;
-    const newY = player.y+dy;
-    if(isOnRoad(newX,newY)){
-        player.x=newX;
-        player.y=newY;
+    const nextX = player.x+dx;
+    const nextY = player.y+dy;
+    if(isOnRoad(nextX,player.y)){
+        player.x=nextX;
     }
+    if(isOnRoad(player.x,nextY)){
+        player.y=nextY;
+    }
+    const followSpeed = 0.12;
+    camera.x+=(-player.x-camera.x)*followSpeed;
+    camera.y+=(-player.y-camera.y)*followSpeed;
 }
 function isOnRoad(x,y){
-    const roadWidth = 35;
     for(const road of roads){
-        let points=[];
-        if(road.bend){
-            points=[{x:road.x1,y:road.y1},road.bend,{x:road.x2,y:road.y2}];
+        if(!road.bend){
+            if(pointToLineDistance(x,y,road.x1,road.y1,road.x2,road.y2)<=ROAD_WIDTH/2){
+                return true;
+            }
         }
         else{
-            points=[{x:road.x1,y:road.y1},{x:road.x2,y:road.y2}];
-        }
-        for(let i=0;i<points.length-1;i++){
-            const dist = pointToLineDistance(x,y,points[i].x,points[i].y,points[i+1].x,points[i+1].y);
-            if(dist<roadWidth){
+            if(pointToLineDistance(x,y,road.x1,road.y1,road.bend.x,road.bend.y)<=ROAD_WIDTH/2){
+                return true;
+            }
+            if(pointToLineDistance(x,y,road.bend.x,road.bend.y,road.x2,road.y2)<=ROAD_WIDTH/2){
                 return true;
             }
         }
