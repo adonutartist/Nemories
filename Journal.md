@@ -479,3 +479,203 @@ The latest prototype showcases the first fully expanding procedural city, mouse 
 > <img width="1920" height="1080" alt="Screenshot (124)" src="https://github.com/user-attachments/assets/21453fa3-ad56-47d9-91f9-9067bedbb111" /><img width="1920" height="1080" alt="Screenshot (129)" src="https://github.com/user-attachments/assets/ea3247a7-de1f-43a7-b018-fa1405c9a525" /><img width="1920" height="1080" alt="Screenshot (128)" src="https://github.com/user-attachments/assets/2fcc8b07-b4bc-4416-a021-3359ff79a821" /><img width="1920" height="1080" alt="Screenshot (127)" src="https://github.com/user-attachments/assets/f2e973f4-5ee9-4f95-8426-8f83ab29e47f" /><img width="1920" height="1080" alt="Screenshot (126)" src="https://github.com/user-attachments/assets/335c0e11-45ff-46dd-bc53-c2575a731c52" /><img width="1920" height="1080" alt="Screenshot (125)" src="https://github.com/user-attachments/assets/fadc5525-9706-4162-a4e2-cc8dc6ad3bd9" />
 
 ---
+
+# Devlog #4
+
+**Date:** July 10, 2026 10:00 PM to July 11, 2026 3:00 AM
+
+---
+
+# Overview
+
+Today I was focused on making Nemories feel less like a simple desktop application and more like a personal companion that lives on the user's desktop. The biggest addition was the introduction of the first desktop widget prototype, allowing emotional statistics to exist outside the main application. Alongside this, I expanded the analytics system with a completely new mood history graph, introduced persistent world saving, improved memory editing behaviour, added UI polish across multiple windows, and began experimenting with allowing the player to physically explore the city using keyboard movement.
+
+---
+
+# Desktop Widget Prototype
+
+One of the biggest milestones today was successfully creating the first standalone desktop widget.
+Instead of reopening the full application just to view emotional statistics, users can now spawn a lightweight floating widget directly from the Statistics window.
+
+Current functionality includes:
+
+* Add Nemory Stats as Widget option.
+* Widget launches as a separate Electron window.
+* Frameless floating desktop widget.
+* Always-on-top behaviour.
+* Hidden from the taskbar.
+* Dedicated close button.
+* Custom draggable title bar.
+* Automatic reopening prevention if already running.
+
+This lays the foundation for future desktop widgets that can display additional information beyond statistics.
+
+---
+
+# Widget Pie Chart
+
+The widget was expanded from a blank floating window into a live statistics display.
+
+New additions include:
+
+* Standalone emotion distribution pie chart.
+* Shared emotion colour palette with the main application.
+* Glowing chart styling.
+* Percentage labels inside larger slices.
+* Automatic text colour adjustment for readability.
+* Central Nemory counter.
+* Live synchronisation with the application's saved data.
+
+Although simplified compared to the full Statistics window, the widget provides a quick overview of emotional balance without opening Nemories.
+
+---
+
+# Mood Timeline
+
+The statistics dashboard was expanded with a completely new visualisation designed to show how emotions evolve over time rather than simply displaying their overall distribution.
+
+Current implementation includes:
+
+* Daily mood history generation.
+* Emotion scoring system.
+* Automatic daily mood averaging.
+* Timeline graph visualisation.
+* Interactive graph points.
+* Hover detection.
+* Date display.
+* Average mood display.
+* Daily memory count.
+* Responsive graph scaling.
+* Larger analytics window for improved readability.
+
+Rather than asking *"Which emotions appear most?"*, the graph answers *"How has my overall mood changed over time?"*
+
+---
+
+# Persistent World Saving
+
+Previously, only the journal itself was saved while the procedural city had to be regenerated each time the application restarted.
+The save system has now been significantly improved.
+
+New improvements include:
+
+* Unified save structure.
+* Camera position persistence.
+* Memory timestamp storage.
+* Automatic upgrade of older save files.
+* Reliable world reconstruction after loading.
+* Shared save data used by statistics, widget, and mood timeline.
+
+This creates a much stronger foundation for future world persistence features.
+
+---
+
+# Memory Editing Improvements
+
+Editing existing memories now updates every connected system rather than only changing the journal text.
+
+New behaviour includes:
+
+* Building colours automatically update after emotion changes.
+* Statistics instantly refresh.
+* Mood graph refreshes automatically.
+* Widget reflects updated emotional data.
+* Save file updates immediately after editing.
+
+This makes the city behave much more like a living representation of the journal instead of a collection of disconnected objects.
+
+---
+
+# About Window
+
+A brand new About section was added to give all my info like github repo link etc.
+
+Current additions include:
+
+* Clickable Nemories button.
+* Dedicated About window.
+* Project information.
+* Direct GitHub repository button.
+* Improved formatting and layout.
+
+---
+
+# Player Movement Prototype
+
+Work also began on allowing the player marker to become an actual controllable character rather than simply acting as a static indicator.
+
+Experimental work includes:
+
+* Keyboard movement using WASD.
+* Initial road collision system.
+* Restricting movement to roads.
+* Collision testing with straight and bent road segments.
+* Improved movement calculations.
+
+The system is still being refined, but it marks the beginning of transforming the city into something that can actually be explored rather than simply observed.
+
+---
+
+# Bug Fixes
+
+And ofcourse another hour or so was spent tracking down unexpected issues introduced while connecting multiple systems together.
+
+Some of the larger fixes included:
+
+* Fixed widget failing to launch.
+* Corrected Electron IPC communication.
+* Fixed widget synchronisation issues.
+* Resolved pie chart rendering failures inside the widget.
+* Corrected percentage label positioning.
+* Fixed mood graph rendering with single-day datasets.
+* Fixed outdated building colours after editing memories.
+* Corrected save file compatibility with older Nemories.
+* Fixed multiple Local Storage inconsistencies.
+* Corrected several CSS layout problems across newly added windows.
+* Fixed modal sizing issues.
+
+Many of these fixes required several iterations before every system began updating consistently.
+
+---
+
+# Current State
+
+Nemories is quite near completion actually it is technically completed cuz all the funtions are there now I am just adding some random stuff I like ;-;
+
+The application now supports:
+
+* Infinite procedural city generation.
+* Interactive statistics dashboard.
+* Desktop statistics widget.
+* Persistent world saving.
+* Mood timeline analytics.
+* Emotion history tracking.
+* Automatic building colour updates.
+* Live data synchronisation.
+* Dedicated About page.
+* Improved desktop style interface.
+* Early player movement prototype.
+
+---
+
+# What's Next
+
+The next development milestone will focus on making the city feel alive rather than static.
+
+Planned work includes:
+
+* Finalising player movement.
+* Reliable road collision.
+* Camera following the player.
+* Memory streak system.
+* World decorations such as trees, benches and street lights.
+
+---
+
+# Current Prototype Images
+
+The latest prototype demonstrates Nemories' first desktop widget, the interactive mood timeline, improved statistics system, refreshed About page, and the early exploration mechanics that will eventually allow users to physically walk through the city created by their memories.
+
+> <img width="1920" height="1080" alt="Screenshot (130)" src="https://github.com/user-attachments/assets/97aeb260-c8f4-4781-b481-60d977536cbd" /><img width="1920" height="1080" alt="Screenshot (134)" src="https://github.com/user-attachments/assets/54d8fa8d-ef66-4eda-8037-26f88ecfb72a" /><img width="1920" height="1080" alt="Screenshot (135)" src="https://github.com/user-attachments/assets/771435d0-30d8-4759-b32e-2423ccc171c8" /><img width="1920" height="1080" alt="Screenshot (133)" src="https://github.com/user-attachments/assets/cd8e3f89-e539-4780-b3b6-1623634e9d85" /><img width="1920" height="1080" alt="Screenshot (132)" src="https://github.com/user-attachments/assets/88d11db6-1b0b-4d6c-aba4-603d01d9be1f" /><img width="1920" height="1080" alt="Screenshot (131)" src="https://github.com/user-attachments/assets/643b3a93-76b2-4bbe-86b7-cc0e0d39405b" />
+
+---
