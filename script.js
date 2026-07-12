@@ -286,6 +286,19 @@ class Flock{
             this.birds.push(bird);
         }
     }
+    isTooCloseExcept(x,y,ignoreBird){
+        const minDistance=35;
+        for(const bird of this.birds){
+            if(bird===ignoreBird) continue;
+            const dx = bird.x-x;
+            const dy = bird.y-y;
+            const distance=Math.sqrt(dx*dx+dy*dy);
+            if(distance<minDistance){
+                return true;
+            }
+        }
+        return false;
+    }
     isTooClose(x,y){
         const minDistance=35;
         for(const bird of this.birds){
@@ -309,16 +322,18 @@ class Flock{
             Math.floor(Math.random()*buildings.length)
         ];
     if(b){
-        this.x = b.x + b.width/2;
-        this.y = b.y + b.height + 20;
-        this.state="landed";
-        this.birds.forEach((bird,index)=>{
-            let birdX;
-            let birdY;
-            let attempts=0;
-            do{
-                
-            }
+        this.x=b.x+b.width/2
+        this.y=b.y+b.height+20;
+        this.state="returning";
+        this.birds.forEach((bird)=>{
+            bird.x=this.x+(Math.random()-0.5)*300;
+            bird.y=this.y-500-Math.random()*200;
+            let angle = Math.random()*Math.PI*2;
+            let dist = 40+Math.random()*60;
+            bird.targetX=this.x+Math.cos(angle)*dist;
+            bird.targetY=this.y+Math.sin(angle)*dist;
+            bird.state="returning";
+            bird.timer=0;
         });
     }
 }
