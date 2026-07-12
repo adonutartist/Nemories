@@ -2,6 +2,21 @@ const { BrowserWindow } = require("electron");
 const {ipcRenderer} = require("electron");
 const hoverSfx = new Audio("hoversfx.wav");
 const pigeonImage = new Image();
+const pigeonScaled = document.createElement("canvas")
+pigeonImage.onload = () => {
+    const scale = 4;
+    pigeonScaled.width = pigeonImage.width * scale;
+    pigeonScaled.height = pigeonImage.height * scale;
+    const pctx = pigeonScaled.getContext("2d");
+    pctx.imageSmoothingEnabled = false;
+    pctx.drawImage(
+        pigeonImage,
+        0,
+        0,
+        pigeonScaled.width,
+        pigeonScaled.height
+    );
+};
 pigeonImage.src = "Pidgeon Sprite Sheet.png";
 const canvas = document.getElementById("worldCanvas");
 const ctx = canvas.getContext("2d");
@@ -248,7 +263,7 @@ class Bird{
         this.frame=0;
         this.timer = 0;
         this.state="idle";
-        this.scale=.8+Math.random()*.4;
+        this.scale=1;
         this.seed=Math.random()*1000;
         this.targetX=x;
         this.targetY=y;
@@ -286,7 +301,18 @@ class Bird{
 }
 function drawBirds(){
     birds.forEach(bird=>{
-        ctx.drawImage(pigeonImage,(bird.frame%4)*32,Math.floor(bird.frame/4)*32,32,32,bird.x,bird.y,64*bird.scale,64*bird.scale);
+        const scale = 4;
+        ctx.drawImage(
+            pigeonScaled,
+            (bird.frame % 4) * 32 * scale,
+            Math.floor(bird.frame / 4) * 32 * scale,
+            32 * scale,
+            32 * scale,
+            Math.round(bird.x),
+            Math.round(bird.y),
+            32 * scale,
+            32 * scale
+        );
     });
 }
 const keys = {};

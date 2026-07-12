@@ -163,6 +163,8 @@ body{
     height: 100%;
     display: block;
     background: #111111;
+    image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 @keyframes pulse{
