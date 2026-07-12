@@ -20,6 +20,7 @@ pigeonImage.onload = () => {
 pigeonImage.src = "Pidgeon Sprite Sheet.png";
 const canvas = document.getElementById("worldCanvas");
 const ctx = canvas.getContext("2d");
+const BIRD_MIN_DISTANCE = 45;
 ctx.imageSmoothingEnabled = false;
 ctx.webkitImageSmoothingEnabled = false;
 ctx.mozImageSmoothingEnabled = false;
@@ -267,13 +268,35 @@ class Flock{
         this.birds=[];
         this.scared=false;
         for(let i=0;i<count;i++){
-            const angle=Math.random()*Math.PI*2;
-            const dist=40+Math.random()*60;
-            const bird=new Bird(x+Math.cos(angle)*dist,y+Math.sin(angle)*dist);
+            let birdX;
+            let birdY;
+            let attempts=0;
+            do{
+                const angle=Math.random()*Math.PI*2; 
+                const dist = 40+Math.random()*60;
+                birdX=x+Math.cos(angle)*dist;
+                birdY=y+Math.sin(angle)*dist;
+                attempts++;
+            } while(
+                (!validBirdPosition(birdX,birdY)||this.isTooClose(birdX,birdY))&& attempts<100
+            );
+            const bird=new Bird(birdX,birdY);
             bird.homeX=bird.x;
             bird.homeY=bird.y;
             this.birds.push(bird);
         }
+    }
+    isTooClose(x,y){
+        const minDistance=35;
+        for(const bird of this.birds){
+            const dx=bird.x-x;
+            const dy=bird.y-y;
+            const distance=Math.sqrt(dx*dx+dy*dy);
+            if(distance<minDistance){
+                return true;
+            }
+        }
+        return false;
     }
     update(){
         this.birds.forEach(b=>b.update());
@@ -281,67 +304,46 @@ class Flock{
     this.state==="flying" &&
     this.birds.every(b=>b.state==="gone")
 ){
-
     const b =
         buildings[
             Math.floor(Math.random()*buildings.length)
         ];
-
     if(b){
-
         this.x = b.x + b.width/2;
         this.y = b.y + b.height + 20;
-
         this.state="landed";
-
-        this.birds.forEach(bird=>{
-
-            const angle=Math.random()*Math.PI*2;
-            const dist=40+Math.random()*60;
-
-            bird.x=this.x+Math.cos(angle)*dist;
-            bird.y=this.y+Math.sin(angle)*dist;
-
-            bird.state="idle";
-            bird.timer=0;
-
+        this.birds.forEach((bird,index)=>{
+            let birdX;
+            let birdY;
+            let attempts=0;
+            do{
+                
+            }
         });
-
     }
-
 }
         let sx = 0;
         let sy = 0;
         this.birds.forEach(b => {
-sx += b.x + b.size/2;
-sy += b.y + b.size/2;
+        sx += b.x + b.size/2;
+        sy += b.y + b.size/2;
         });
         this.x = sx / this.birds.length;
         this.y = sy / this.birds.length;
     }
     scare(){
-
     if(this.state==="flying") return;
-
     this.state="flying";
-
     this.birds.forEach(b=>{
-
         b.state="fly";
-
         const angle =
             -Math.PI/2 +
             (Math.random()-0.5)*0.7;
-
         const speed = 5 + Math.random()*2;
-
         b.vx = Math.cos(angle)*speed;
         b.vy = Math.sin(angle)*speed;
-
         b.timer = 0;
-
     });
-
 }
 }
 class Bird{
@@ -396,6 +398,54 @@ class Bird{
         this.x=Math.random()*1200-600;
         this.y=Math.random()*1200-600;
     }
+}
+function tooCloseToOtherBird(x,y){
+    for(const bird of birds){
+        const dx=bird.x-x;
+        const dy=bird.y-y;
+        const distance=Math.sqrt(dx*dx+dy*dy);
+        if(distance<BIRD_MIN_DISTANCE){
+            return true;
+        }
+    }
+    return false;
+}
+function isPointInsideBuilding(x,y,padding=20){
+    for(const building of buildings){
+        if(x>building.x-padding &&
+            x<building.x+building.width+padding &&
+            y>building.y-padding &&
+            y<building.y+building.height+padding
+        ){
+            return true;
+        }
+    }
+    return false;
+}
+function isNearRoad(x,y,distance=35){
+    for(const road of roads){
+        const dx=road.x2-road.x1;
+        const dy=road.y2-road.y1;
+        const length=Math.sqrt(dx*dx+dy*dy);
+        const t=(((x-road.x1)*dx)+((y-road.y1)*dy))/(length*length);
+        const clamped=Math.max(0,Math.min(1,t));
+        const closestX=road.x1+clamped*dx;
+        const closestY=road.y1+clamped*dy;
+        const dist=Math.sqrt((x-closestX)**2+(y-closestY)**2);
+        if(dist<distance){
+            return true;
+        }
+    }
+    return false;
+}
+function validBirdPosition(x,y){
+    if(isPointInsideBuilding(x,y)){
+        return false;
+    }
+    if(isNearRoad(x,y)){
+        return false;
+    }
+    return true;
 }
 function drawBirds(){
     flocks.forEach(flock=>{
