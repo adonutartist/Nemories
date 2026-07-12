@@ -382,21 +382,6 @@ class Bird{
         this.targetY=y;
     }
     update(){
-        if(this.state==="returning"){
-            const dx=this.targetX-this.x;
-            const dy=this.targetY-this.y;
-            const distance=Math.sqrt(dx*dx+dy*dy);
-            if(distance<3){
-                this.x=this.targetX;
-                this.y=this.targetY;
-                this.state="idle";
-                return;
-            }
-            const speed=4;
-            this.x+=(dx/distance)*speed;
-            this.y+=(dy/distance)*speed;
-            return;
-        }
         this.timer++;
         switch(this.state){
             case "idle":this.frame=Math.floor(this.timer/10)%4;
@@ -411,20 +396,38 @@ class Bird{
                 this.timer=0;
             }
             break;
-            case "fly":this.frame=12+Math.floor(this.timer/4)%4;
-            this.x+=this.vx;
-            this.y+=this.vy;
-            if(
-    this.x < -800 ||
-    this.x > 5000 ||
-    this.y < -800 ||
-    this.y > 5000
-){
-
-    this.state = "gone";
-
-}
-            break;
+            case "fly":
+            case "returning":
+                this.frame=12+Math.floor(this.timer/4)%4;
+            if(this.state==="fly"){
+                this.x+=this.vx;
+                this.y+=this.vy;
+                if(
+                    this.x < -800 ||
+                    this.x > 5000 ||
+                    this.y < -800 ||
+                    this.y > 5000
+                ){
+                    this.state = "gone";
+                }
+            }
+            if(this.state==="returning"){
+                const dx=this.targetX-this.x;
+                const dy=this.targetY-this.y;
+                const distance=Math.sqrt(dx*dx+dy*dy);
+                const speed=4;
+                if(distance<3){
+                    this.x=this.targetX;
+                    this.y=this.targetY;
+                    this.state="idle";
+                    this.timer=0;
+                    this.frame=0;
+                    return;
+                }
+                this.x+=(dx/distance)*speed;
+                this.y+=(dy/distance)*speed;
+            }
+        break;
         }
     }
     respawn(){
