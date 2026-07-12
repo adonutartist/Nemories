@@ -207,7 +207,12 @@ let lastMouseX = 0;
 let lastMouseY = 0;
 const roads = [];
 const buildings = [];
-const birds=[];
+const birds = [];
+const flocks=[];
+let mouse = {
+    x:0,
+    y:0
+};
 const intersections = [];
 const roadNodes = [];
 const player = {x: 0, y: 0, radius: 6, pulse: 0, speed: 2.5};
@@ -254,6 +259,91 @@ class Building{
         }
     }
 }
+class Flock{
+    constructor(x,y,count){
+        this.x=x;
+        this.y=y;
+        this.state="landed";
+        this.birds=[];
+        this.scared=false;
+        for(let i=0;i<count;i++){
+            const angle=Math.random()*Math.PI*2;
+            const dist=40+Math.random()*60;
+            const bird=new Bird(x+Math.cos(angle)*dist,y+Math.sin(angle)*dist);
+            bird.homeX=bird.x;
+            bird.homeY=bird.y;
+            this.birds.push(bird);
+        }
+    }
+    update(){
+        this.birds.forEach(b=>b.update());
+        if(
+    this.state==="flying" &&
+    this.birds.every(b=>b.state==="gone")
+){
+
+    const b =
+        buildings[
+            Math.floor(Math.random()*buildings.length)
+        ];
+
+    if(b){
+
+        this.x = b.x + b.width/2;
+        this.y = b.y + b.height + 20;
+
+        this.state="landed";
+
+        this.birds.forEach(bird=>{
+
+            const angle=Math.random()*Math.PI*2;
+            const dist=40+Math.random()*60;
+
+            bird.x=this.x+Math.cos(angle)*dist;
+            bird.y=this.y+Math.sin(angle)*dist;
+
+            bird.state="idle";
+            bird.timer=0;
+
+        });
+
+    }
+
+}
+        let sx = 0;
+        let sy = 0;
+        this.birds.forEach(b => {
+sx += b.x + b.size/2;
+sy += b.y + b.size/2;
+        });
+        this.x = sx / this.birds.length;
+        this.y = sy / this.birds.length;
+    }
+    scare(){
+
+    if(this.state==="flying") return;
+
+    this.state="flying";
+
+    this.birds.forEach(b=>{
+
+        b.state="fly";
+
+        const angle =
+            -Math.PI/2 +
+            (Math.random()-0.5)*0.7;
+
+        const speed = 5 + Math.random()*2;
+
+        b.vx = Math.cos(angle)*speed;
+        b.vy = Math.sin(angle)*speed;
+
+        b.timer = 0;
+
+    });
+
+}
+}
 class Bird{
     constructor(x,y){
         this.x=x;
@@ -265,6 +355,7 @@ class Bird{
         this.state="idle";
         this.scale=1;
         this.seed=Math.random()*1000;
+        this.size=128;
         this.targetX=x;
         this.targetY=y;
     }
@@ -286,9 +377,16 @@ class Bird{
             case "fly":this.frame=12+Math.floor(this.timer/4)%4;
             this.x+=this.vx;
             this.y+=this.vy;
-            if(this.x<-400||this.x>4000||this.y<-400||this.y>4000){
-                this.respawn();
-            }
+            if(
+    this.x < -800 ||
+    this.x > 5000 ||
+    this.y < -800 ||
+    this.y > 5000
+){
+
+    this.state = "gone";
+
+}
             break;
         }
     }
@@ -300,19 +398,20 @@ class Bird{
     }
 }
 function drawBirds(){
-    birds.forEach(bird=>{
-        const scale = 4;
-        ctx.drawImage(
-            pigeonScaled,
-            (bird.frame % 4) * 32 * scale,
-            Math.floor(bird.frame / 4) * 32 * scale,
-            32 * scale,
-            32 * scale,
-            Math.round(bird.x),
-            Math.round(bird.y),
-            32 * scale,
-            32 * scale
-        );
+    flocks.forEach(flock=>{
+        flock.birds.forEach(bird=>{
+            ctx.drawImage(
+                pigeonScaled,
+                (bird.frame%4)*128,
+                Math.floor(bird.frame/4)*128,
+                128,
+                128,
+                Math.round(bird.x),
+                Math.round(bird.y),
+                128,
+                128
+            );
+        });
     });
 }
 const keys = {};
@@ -405,20 +504,20 @@ function drawRoads(){
     ctx.lineCap = "round";
     roads.forEach(road => {
         ctx.beginPath();
-        ctx.moveTo(canvas.width/2 + road.x1, canvas.height/2 + road.y1);
+        ctx.moveTo(road.x1, road.y1);
         if(road.bend){
             ctx.lineTo(
-                canvas.width/2+road.bend.x,
-                canvas.height/2+road.bend.y
+                road.bend.x,
+                road.bend.y
             );
         }
-        ctx.lineTo(canvas.width/2+road.x2, canvas.height/2+road.y2);
+        ctx.lineTo(road.x2, road.y2);
         if(!isRoadEndConnected(road)){
             let gradient = ctx.createLinearGradient(
-                canvas.width/2+road.x1,
-                canvas.height/2 + road.y1,
-                canvas.width / 2 + road.x2,
-                canvas.height/2+road.y2
+                road.x1,
+                road.y1,
+                road.x2,
+                road.y2
             );
             gradient.addColorStop(0, "#555");
             gradient.addColorStop(1, "#111");
@@ -459,10 +558,20 @@ function drawBuildings(){
             ctx.shadowBlur = 18;
         }
         ctx.fillStyle = "#222";
-        ctx.fillRect(canvas.width/2 + building.x, canvas.height/2 + building.y, building.width, building.height);
+        ctx.fillRect(
+    building.x,
+    building.y,
+    building.width,
+    building.height
+);
         ctx.strokeStyle = building.color;
         ctx.lineWidth = 3;
-        ctx.strokeRect(canvas.width/2 + building.x, canvas.height/2 + building.y, building.width, building.height);
+        ctx.strokeRect(
+    building.x,
+    building.y,
+    building.width,
+    building.height
+);
         ctx.restore();
     }); 
 }
@@ -503,8 +612,8 @@ return {
 }
 function drawBuildingLabels(){
     if(!hoverBuilding) return;
-    const x = canvas.width/2 + hoverBuilding.x + hoverBuilding.width/2;
-    const y = canvas.height/2 + hoverBuilding.y - 12;
+    const x = hoverBuilding.x + hoverBuilding.width/2;
+    const y = hoverBuilding.y - 12;
     const text = `Memory #${hoverBuilding.memoryID + 1}`;
     ctx.save();
     ctx.font = "15px Consolas";
@@ -524,11 +633,20 @@ function drawBuildingLabels(){
     ctx.fillText(text, x, y-h/2);
     ctx.restore();
 }
-function screenToWorld(x, y){
+function screenToWorld(x,y){
+
     return{
-        x: x-canvas.width/2-camera.x,
-        y: y-canvas.height/2-camera.y
+
+        x:
+            (x-canvas.width/2)/camera.zoom
+            -camera.x,
+
+        y:
+            (y-canvas.height/2)/camera.zoom
+            -camera.y
+
     };
+
 }
 function createWorld(){
     const rootNode = new RoadNode(0,0);
@@ -629,14 +747,10 @@ function stopDrag(){
 }
 function drawPlayer(){
     player.pulse += 0.05;
-
     const radius = player.radius + Math.sin(player.pulse) * 1.2;
-
-    const screenX = canvas.width/2 + player.x;
-    const screenY = canvas.height/2 + player.y;
-
+    const screenX = player.x;
+    const screenY = player.y;
     ctx.save();
-
     ctx.beginPath();
     ctx.arc(
         screenX,
@@ -645,11 +759,9 @@ function drawPlayer(){
         0,
         Math.PI * 2
     );
-
     ctx.fillStyle = "#00ff66";
     ctx.shadowColor = "#00ff44";
     ctx.shadowBlur = 18;
-
     ctx.fill();
     ctx.restore();
     console.log(player.x, player.y, camera.x, camera.y);
@@ -1015,12 +1127,19 @@ function render(){
     buildings.forEach(building=>{
         building.update();
     })
-    birds.forEach(bird=>bird.update());
+    flocks.forEach(f=>f.update());
+    flocks.forEach(flock=>{
+        if(flock.state !== "landed") return;
+        const dx=mouse.x-flock.x;
+        const dy=mouse.y-flock.y;
+        if(Math.hypot(dx,dy)<180){
+            flock.scare();
+        }
+    });
     ctx.save();
     ctx.translate(canvas.width/2, canvas.height/2);
     ctx.scale(camera.zoom, camera.zoom);
     ctx.translate(camera.x, camera.y);
-    ctx.translate(-canvas.width/2, -canvas.height/2);
     drawBirds();
     drawRoads();
     drawBuildings();
@@ -1041,11 +1160,11 @@ function rebuildWorld(){
     memories.forEach((memory,index)=>{
         spawnBuilding(index);
     });
-    birds.length=0;
-    for(let i=0;i<6;i++){
+    flocks.length=0;
+    for(let i=0;i<4;i++){
         const b=buildings[Math.floor(Math.random()*buildings.length)];
         if(!b) continue;
-        birds.push(new Bird(b.x+Math.random()*80-40,b.y+b.height+25));
+        flocks.push(new Flock(b.x+b.width/2,b.y+b.height+25,3+Math.floor(Math.random()*4)));
     }
 }
 function saveWorld(){
@@ -1164,19 +1283,10 @@ canvas.addEventListener("click", clickBuilding);
 canvas.addEventListener("mousedown", startDrag);
 window.addEventListener("mousemove", e => {dragCamera(e); updateHoveredBuilding(e);
     const rect = canvas.getBoundingClientRect();
-    const mouse = screenToWorld(e.clientX-rect.left,e.clientY-rect.top);
-    birds.forEach(bird=>{
-        if(bird.state==="fly") return;
-        const dx=mouse.x-bird.x;
-        const dy=mouse.y-bird.y;
-        if(Math.hypot(dx,dy)<90){
-            bird.state="fly";
-            bird.timer=0;
-            const angle = Math.atan2(bird.y-mouse.y,bird.x-mouse.x);
-            bird.vx=Math.cos(angle)*4;
-            bird.vy=Math.sin(angle)*4;
-        }
-    });
+    mouse = screenToWorld(
+        e.clientX - rect.left,
+        e.clientY - rect.top
+    );
 });
 window.addEventListener("mouseup", stopDrag);
 emotionButtons[0].classList.add("selected");
