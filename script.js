@@ -313,6 +313,11 @@ class Flock{
     }
     update(){
         this.birds.forEach(b=>b.update());
+        if(this.state==="returning" &&
+            this.birds.every(b=>b.state==="idle")
+        ){
+            this.state="landed";
+        }
         if(
     this.state==="flying" &&
     this.birds.every(b=>b.state==="gone")
@@ -377,6 +382,21 @@ class Bird{
         this.targetY=y;
     }
     update(){
+        if(this.state==="returning"){
+            const dx=this.targetX-this.x;
+            const dy=this.targetY-this.y;
+            const distance=Math.sqrt(dx*dx+dy*dy);
+            if(distance<3){
+                this.x=this.targetX;
+                this.y=this.targetY;
+                this.state="idle";
+                return;
+            }
+            const speed=4;
+            this.x+=(dx/distance)*speed;
+            this.y+=(dy/distance)*speed;
+            return;
+        }
         this.timer++;
         switch(this.state){
             case "idle":this.frame=Math.floor(this.timer/10)%4;
