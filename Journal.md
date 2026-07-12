@@ -679,3 +679,145 @@ The latest prototype demonstrates Nemories' first desktop widget, the interactiv
 > <img width="1920" height="1080" alt="Screenshot (130)" src="https://github.com/user-attachments/assets/97aeb260-c8f4-4781-b481-60d977536cbd" /><img width="1920" height="1080" alt="Screenshot (134)" src="https://github.com/user-attachments/assets/54d8fa8d-ef66-4eda-8037-26f88ecfb72a" /><img width="1920" height="1080" alt="Screenshot (135)" src="https://github.com/user-attachments/assets/771435d0-30d8-4759-b32e-2423ccc171c8" /><img width="1920" height="1080" alt="Screenshot (133)" src="https://github.com/user-attachments/assets/cd8e3f89-e539-4780-b3b6-1623634e9d85" /><img width="1920" height="1080" alt="Screenshot (132)" src="https://github.com/user-attachments/assets/88d11db6-1b0b-4d6c-aba4-603d01d9be1f" />
 
 ---
+
+# Devlog #5
+
+**Date:** July 11, 2026 11:30 PM to July 12, 2026 3:00 AM
+
+---
+
+# Overview
+
+Today I tried to make some random interactive features like hover on bird packs, grass, wind many failed stuff. I spent a large portion of the session improving player movement, implementing camera behaviour, experimenting with environmental effects such as animated grass and wind, and beginning work on ambient wildlife that will eventually populate the city. While many of these systems are still prototypes and I ended up deleting many, but they kinda establish the foundation for transforming Nemories into something that feels like a living miniature world rather than a static procedural map.
+
+---
+
+# Camera Improvements
+
+After introducing player movement in the previous build, navigation received another major improvement through a new camera follow system.
+
+New additions include:
+
+* Automatic camera follow mode.
+* Smooth camera interpolation.
+* Free camera exploration using mouse dragging.
+* Automatic switch between follow mode and free camera.
+* Camera instantly returns to the player when movement resumes.
+* Improved exploration workflow.
+
+Rather than permanently locking the camera to the player, users are now free to explore the city before instantly returning to their current position simply by moving again.
+
+---
+
+# Improved World Interaction
+
+Several improvements were made to make interacting with the city feel much more responsive.
+
+Current improvements include:
+
+* Corrected hover calculations after camera zoom.
+* Improved world coordinate conversion.
+
+These changes will help reduced the inconsistencies that appeared while navigating larger cities.
+
+---
+
+# Dynamic Grass Prototype
+
+Work began on replacing the previously empty background with a much more natural environment but I straight up failed like insane...
+
+Implementation included:
+
+* Procedurally generated grass blades.
+* Large grassy landscape surrounding the city.
+* Automatic avoidance around roads.
+* Automatic avoidance around buildings.
+* Grass generation restricted to valid terrain only.
+
+But the end result kinda look trash so here we are with our usual black background ;-;
+
+---
+
+# Wind Simulation
+
+I tried adding wind for grass blade movement But it all looked trash.
+
+Changes included:
+
+* Travelling wind wave.
+* Grass sway animation.
+* Wind direction.
+* Wind strength.
+* Procedural wave propagation.
+* Automatic wind timing.
+
+But deleted it cuz visually looks bad
+
+---
+
+# Ambient Wildlife Prototype
+
+This is the one feature I did correctly well it looks bad ngl.
+
+Current work includes:
+
+* First pigeon sprite integration.
+* Animated idle state.
+* Animated feeding behaviour.
+* Animated flying behaviour.
+* Procedural spawning near buildings.
+* Hover based scare behaviour.
+* Initial flock generation system.
+
+I don't know how to implement crisp pixel sprites it all looks blurry right now. Can't use the usual css image rendering pixelated cuz I am making them in ctx.
+
+---
+
+# Current State
+
+Nemories has started transitioning from a procedural journal into something that feels much more alive.
+
+The application now supports:
+
+* Infinite procedural city generation.
+* Persistent world saving.
+* Interactive statistics dashboard.
+* Desktop statistics widget.
+* Mood timeline visualisation.
+* Camera follow mode.
+* Free camera exploration.
+* Keyboard player movement.
+* Procedural grass generation.
+* Animated wind effects.
+* Ambient pigeon prototype.
+* Interactive About page.
+* Live building colour updates.
+* Responsive hover sound effects.
+
+---
+
+# What's Next
+
+The next milestone will focus on bringing even more life into the city.
+
+Planned work includes:
+
+* Finalising pigeon AI.
+* Birds flying in from off-screen and naturally landing.
+* Improved flock behaviour.
+* Street lamps.
+* Benches and decorative props.
+* Trees and flowers.
+* Memory streak system.
+* Additional desktop widgets.
+* More ambient wildlife such as butterflies.
+
+---
+
+# Current Prototype Images
+
+The latest prototype showcases the new player camera system, procedural grass generation, animated wind prototype, improved analytics interface, and the first implementation of ambient wildlife beginning to inhabit the growing city.
+
+> <img width="1920" height="1080" alt="Screenshot (137)" src="https://github.com/user-attachments/assets/ca4961a7-b9c7-4283-93e4-fa43005bf778" /><img width="1920" height="1080" alt="Screenshot (136)" src="https://github.com/user-attachments/assets/7e10619a-8bed-40a7-beed-b2efc2d0191a" />
+
+---
