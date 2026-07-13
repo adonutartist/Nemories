@@ -1,9 +1,10 @@
-const customCursor={x:0,y:0,targetX:0,targetY:0, particles:[],ripples:[],clicking:false};
+
 const { BrowserWindow } = require("electron");
 const {ipcRenderer} = require("electron");
 const hoverSfx = new Audio("hoversfx.wav");
 const pigeonImage = new Image();
-const pigeonScaled = document.createElement("canvas")
+const pigeonScaled = document.createElement("canvas");
+
 pigeonImage.onload = () => {
     const scale = 4;
     pigeonScaled.width = pigeonImage.width * scale;
@@ -723,17 +724,13 @@ function drawBuildingLabels(){
     ctx.restore();
 }
 function screenToWorld(x,y){
-
     return{
-
         x:
             (x-canvas.width/2)/camera.zoom
             -camera.x,
-
         y:
             (y-canvas.height/2)/camera.zoom
             -camera.y
-
     };
 
 }
@@ -1229,14 +1226,14 @@ function render(){
     ctx.translate(canvas.width/2, canvas.height/2);
     ctx.scale(camera.zoom, camera.zoom);
     ctx.translate(camera.x, camera.y);
-    updateCursor();
+
     drawBirds();
     drawRoads();
     drawBuildings();
     drawBuildingLabels();
     drawPlayer();
     ctx.restore();
-        drawCursor();
+
     requestAnimationFrame(render);
 }
 function rebuildWorld(){
@@ -1278,72 +1275,11 @@ function loadWorld(){
     saveWorld();
     rebuildWorld();
 }
-canvas.addEventListener("mousemove",e=>{
-    const rect=canvas.getBoundingClientRect();
-    customCursor.targetX=e.clientX-rect.left;
-    customCursor.targetY=e.clientY-rect.top;
-});
+
 canvas.addEventListener("mousedown",()=>{
-    customCursor.clicking=true;
-    customCursor.ripples.push({
-        x:customCursor.x,
-        y:customCursor.y,
-        radius:5,
-        alpha:1
-    });
+    
 });
-function updateCursor(){
-    customCursor.x += (customCursor.targetX-customCursor.x)*0.25;
-    customCursor.y += (customCursor.targetY-customCursor.y)*0.25;
-    if(Math.random()<0.4){
-        customCursor.particles.push({
-            x:customCursor.x,
-            y:customCursor.y,
-            life:30,
-            size:Math.random()*3+2
-        });
-    }
-    customCursor.particles.forEach(p=>{
-        p.life--;
-    });
-    customCursor.particles=customCursor.particles.filter(p=>p.life>0);
-    customCursor.ripples.forEach(r=>{
-        r.radius+=3;
-        r.alpha-=0.04;
-    });
-    customCursor.ripples=customCursor.ripples.filter(r=>r.alpha>0);
-}
-function drawCursor(){
-    ctx.save();
-    customCursor.particles.forEach(p=>{
-        ctx.globalAlpha=p.life/30;
-        ctx.fillStyle="#7cff9b";
-        ctx.beginPath();
-        ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
-        ctx.fill();
-    });
-    ctx.globalAlpha=1;
-    customCursor.ripples.forEach(r=>{
-        ctx.strokeStyle=`rgba(124,255,155,${r.alpha})`;
-        ctx.lineWidth=2;
-        ctx.beginPath();
-        ctx.arc(r.x,r.y,r.radius,0,Math.PI*2);
-        ctx.stroke();
-    });
-    ctx.shadowBlur=20;
-    ctx.shadowColor="#7cff9b";
-    ctx.fillStyle="#7cff9b";
-    ctx.beginPath();
-    ctx.arc(customCursor.x,customCursor.y,6,0,Math.PI*2);
-    ctx.fill();
-    ctx.shadowBlur=0;
-    ctx.strokeStyle="#ffffff";
-    ctx.lineWidth=1;
-    ctx.beginPath();
-    ctx.arc(customCursor.x,customCursor.y,12,0,Math.PI*2);
-    ctx.stroke();
-    ctx.restore();
-}
+
 statsButton.onclick = () => {
     statsModal.classList.remove("hidden");
     drawStats();
@@ -1465,6 +1401,6 @@ document.addEventListener("mousemove",e=>{
     }
 })
 createRoadNode(rootNode, -Math.PI/2, 120);
-updateCursor();
+
 loadWorld();
 render();

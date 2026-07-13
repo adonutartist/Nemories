@@ -40,7 +40,10 @@ body{
     color: white;
     font-family: Consolas, monospace;
     overflow: hidden;
+
 }
+
+
 
 #titleBar{
     height: 40px;
@@ -163,7 +166,7 @@ body{
     height: 100%;
     display: block;
     background: #111111;
-    cursor: none;
+
 }
 
 @keyframes pulse{
