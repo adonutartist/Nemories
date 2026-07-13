@@ -4,7 +4,7 @@ const {ipcRenderer} = require("electron");
 const hoverSfx = new Audio("hoversfx.wav");
 const pigeonImage = new Image();
 const pigeonScaled = document.createElement("canvas");
-
+const fireflies = [];
 pigeonImage.onload = () => {
     const scale = 4;
     pigeonScaled.width = pigeonImage.width * scale;
@@ -269,6 +269,8 @@ class Flock{
         this.state="landed";
         this.birds=[];
         this.scared=false;
+        this.respawnTimer=0;
+        this.respawnDelay=900+Math.random()*600;
         for(let i=0;i<count;i++){
             let birdX;
             let birdY;
@@ -321,24 +323,26 @@ class Flock{
             this.state="landed";
         }
         if(
-    this.state==="flying" &&
-    this.birds.every(b=>b.state==="gone")
-){
-    const b =
-        buildings[
-            Math.floor(Math.random()*buildings.length)
-        ];
-    if(b){
+            this.state==="flying" && 
+            this.birds.every(b=>b.hidden)){
+            this.respawnTimer++;
+            if(this.respawnTimer<this.respawnDelay){
+                return;
+            }
+            this.respawnTimer=0;
+            const b =buildings[Math.floor(Math.random()*buildings.length)];
+        if(b){
         this.x=b.x+b.width/2
-        this.y=b.y+b.height+20;
+        this.y=b.y+b.height+25;
         this.state="returning";
         this.birds.forEach((bird)=>{
             bird.x=this.x+(Math.random()-0.5)*300;
-            bird.y=this.y-500-Math.random()*200;
-            let angle = Math.random()*Math.PI*2;
-            let dist = 40+Math.random()*60;
+            bird.y=this.y-300-Math.random()*200;
+            const angle = Math.random()*Math.PI*2;
+            const dist = 40+Math.random()*60;
             bird.targetX=this.x+Math.cos(angle)*dist;
             bird.targetY=this.y+Math.sin(angle)*dist;
+            bird.hidden=false;
             bird.state="returning";
             bird.timer=0;
         });
@@ -360,7 +364,7 @@ class Flock{
         b.state="fly";
         const angle =
             -Math.PI/2 +
-            (Math.random()-0.5)*0.7;
+            (Math.random()-0.5)*1.8;
         const speed = 5 + Math.random()*2;
         b.vx = Math.cos(angle)*speed;
         b.vy = Math.sin(angle)*speed;
@@ -382,6 +386,7 @@ class Bird{
         this.size=128;
         this.targetX=x;
         this.targetY=y;
+        this.hidden=false;
     }
     update(){
         this.timer++;
@@ -410,7 +415,8 @@ class Bird{
                     this.y < -800 ||
                     this.y > 5000
                 ){
-                    this.state = "gone";
+                    this.hidden=true;
+                    this.state = "hidden";
                 }
             }
             if(this.state==="returning"){
@@ -429,7 +435,9 @@ class Bird{
                 this.x+=(dx/distance)*speed;
                 this.y+=(dy/distance)*speed;
             }
-        break;
+            break;
+            case "hidden":
+                break; 
         }
     }
     respawn(){
@@ -437,6 +445,45 @@ class Bird{
         this.timer=0;
         this.x=Math.random()*1200-600;
         this.y=Math.random()*1200-600;
+    }
+}
+class Firefly{
+    constructor(x,y){
+        this.x=x;
+        this.y=y;
+        this.homeX=x;
+        this.homeY=y;
+        this.angle=Math.random()*Math.PI*2;
+        this.speed=0.15+Math.random()*0.2;
+        this.radius=4+Math.random()*2;
+        this.seed=Math.random()*1000;
+        this.time=Math.random()*100;
+    }
+    update(){
+        this.time+=0.02;
+        this.angle+=(Math.random()-0.5)*0.05;
+        this.x+=Math.cos(this.angle)*this.speed;
+        this.y+=Math.sin(this.angle)*this.speed;
+        const dx=this.homeX-this.x;
+        const dy=this.homeY-this.y;
+        this.x+=dx*0.002;
+        this.y+=dy*0.002;
+    }
+    draw(){
+        const glow=0.45+Math.sin(this.time+this.seed)*0.4;
+        ctx.save();
+        ctx.globalAlpha=glow*0.2;
+        ctx.shadowBlur=30;
+        ctx.shadowColor="#efff88";
+        ctx.fillStyle="#fff8a6";
+        ctx.beginPath();
+        ctx.arc(this.x,this.y,this.radius*6,0,Math.PI*2);
+        ctx.fill();
+        ctx.globalAlpha=glow;
+        ctx.beginPath();
+        ctx.arc(this.x,this.y,this.radius,0,Math.PI*2);
+        ctx.fill();
+        ctx.restore();
     }
 }
 function tooCloseToOtherBird(x,y){
@@ -490,6 +537,7 @@ function validBirdPosition(x,y){
 function drawBirds(){
     flocks.forEach(flock=>{
         flock.birds.forEach(bird=>{
+            if(bird.hidden) return;
             ctx.drawImage(
                 pigeonScaled,
                 (bird.frame%4)*128,
@@ -1167,6 +1215,9 @@ function drawMoodGraph(){
     moodCtx.fillText("+3",padding-10,moodToY(3)+5);
     moodCtx.fillText("0",padding-10,moodToY(-3)+5);
 }
+function drawFireflies(){
+    fireflies.forEach(f=>f.draw());
+}
 moodChart.addEventListener("mousemove",e=>{
     const rect = moodChart.getBoundingClientRect();
     const scaleX = moodChart.width / rect.width;
@@ -1203,6 +1254,7 @@ moodChart.addEventListener("mouseleave",()=>{
     drawMoodGraph;
 })
 function render(){
+    
     const moved = updatePlayer();
     if(cameraFollowing){
         camera.x += (-player.x - camera.x) * 0.12;
@@ -1222,16 +1274,19 @@ function render(){
             flock.scare();
         }
     });
+    fireflies.forEach(f=>f.update());
     ctx.save();
     ctx.translate(canvas.width/2, canvas.height/2);
     ctx.scale(camera.zoom, camera.zoom);
     ctx.translate(camera.x, camera.y);
-
-    drawBirds();
+    
+    
     drawRoads();
     drawBuildings();
     drawBuildingLabels();
     drawPlayer();
+    drawBirds();
+    drawFireflies();
     ctx.restore();
 
     requestAnimationFrame(render);
@@ -1252,7 +1307,7 @@ function rebuildWorld(){
     for(let i=0;i<4;i++){
         const b=buildings[Math.floor(Math.random()*buildings.length)];
         if(!b) continue;
-        flocks.push(new Flock(b.x+b.width/2,b.y+b.height+25,3+Math.floor(Math.random()*4)));
+        flocks.push(new Flock(b.x+b.width/2,b.y+b.height+25,2+Math.floor(Math.random()*3)));
     }
 }
 function saveWorld(){
@@ -1403,4 +1458,12 @@ document.addEventListener("mousemove",e=>{
 createRoadNode(rootNode, -Math.PI/2, 120);
 
 loadWorld();
+for(let i=0;i<12;i++){
+    fireflies.push(
+        new Firefly(
+            Math.random()*3000-1500,
+            Math.random()*3000-1500
+        )
+    );
+}
 render();
