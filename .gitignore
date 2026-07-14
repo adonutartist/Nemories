@@ -1,1 +1,10 @@
 node_modules/
+*.log
+npm-debug.log*
+dist/
+out/
+release/
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
