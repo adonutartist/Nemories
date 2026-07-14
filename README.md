@@ -39,7 +39,7 @@ This was made as a submission to a Hackclub YSWS called ThingOnDesk. This can he
 ## Download
 
 Nemories is only available for windows users right now but I plan to add android support soon! iOS support is never coming :]
-So if you are on windows please go to releases section and download the latest version from there :> or just [TOUCH MEEEE](https://github.com/adonutartist/Nemories/releases/tag/v1.0.0)
+So if you are on windows please go to releases section and download the latest version from there :> or just [TOUCH MEEEE(https://github.com/adonutartist/Nemories/releases/download/v1.0.0/Nemories.Setup.1.0.0.exe)
 
 ---
 
