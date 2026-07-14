@@ -32,7 +32,7 @@ This was made as a submission to a Hackclub YSWS called ThingOnDesk. This can he
 
 ## Screenshots
 
-> 
+> <img width="1920" height="1080" alt="Screenshot (151)" src="https://github.com/user-attachments/assets/49113d58-4a84-42d0-8da1-daf9211a3b35" /><img width="1920" height="1080" alt="Screenshot (150)" src="https://github.com/user-attachments/assets/bb3c22ed-120c-4047-b476-5d625a5583cc" /><img width="1920" height="1080" alt="Screenshot (149)" src="https://github.com/user-attachments/assets/154a49cd-d6df-4772-8dd4-92daf7e04e2f" /><img width="1920" height="1080" alt="Screenshot (148)" src="https://github.com/user-attachments/assets/09796360-5f8f-4b50-a87d-fe184a18f375" /><img width="1920" height="1080" alt="Screenshot (147)" src="https://github.com/user-attachments/assets/4728e8f8-041c-4f42-ad39-b3144b2957e9" /><img width="1920" height="1080" alt="Screenshot (146)" src="https://github.com/user-attachments/assets/770c4002-160f-4a84-8ba7-1314c710f701" />
 
 ---
 
