@@ -1,4 +1,6 @@
 const {app, BrowserWindow, ipcMain} = require("electron");
+const path = require("path");
+
 let mainWindow;
 let widgetWindow;
 function createWindow(){
@@ -7,6 +9,7 @@ function createWindow(){
         height: 650,
         backgroundColor: "#111111",
         title: "Nemories",
+        icon: path.join(__dirname, "build", "sprite_3.ico"),
         webPreferences: {
             nodeIntegration: true,
             contextIsolation: false
@@ -28,6 +31,7 @@ function createWidget(){
         alwaysOnTop: true,
         skipTaskbar: true,
         hasShadow: false,
+        icon: path.join(__dirname, "build", "sprite (3).ico"),
         webPreferences: {nodeIntegration:true, contextIsolation:false}
     });
     widgetWindow.loadFile("widget.html");

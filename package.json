@@ -4,7 +4,8 @@
   "description": "An archive, an organizer for all your memories or youn call em Nemories i guess :p",
   "main": "main.js",
   "scripts": {
-    "start": "electronmon ."
+    "start": "electronmon .",
+    "build": "electron-builder"
   },
   "repository": {
     "type": "git",
@@ -20,6 +21,12 @@
   "homepage": "https://github.com/adonutartist/Nemories#readme",
   "devDependencies": {
     "electron": "^43.0.0",
+    "electron-builder": "^26.15.3",
     "electronmon": "^2.0.4"
+  },
+  "build": {
+    "appId": "com.nemodonut.nemories",
+    "productName": "Nemories",
+    "win": {"target": "nsis", "icon": "sprite_3.ico"}
   }
 }
