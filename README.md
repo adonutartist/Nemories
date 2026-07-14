@@ -50,7 +50,7 @@ So if you are on windows please go to releases section and download the latest v
 * CSS
 * JavaScript
 * Nemo Magic <3
-* Grandma's Motivation
+* Grandma's Motivation c:
 
 ---
 
