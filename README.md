@@ -1,4 +1,4 @@
-# <img width="281" height="100" alt="image" src="https://github.com/user-attachments/assets/53b91056-9a10-45a1-a153-c148cc1aad8e" />
+# <img width="281" height="100" alt="Vanilla@1x-0 8s-281px-100px" src="https://github.com/user-attachments/assets/d09b4a45-2b24-4d7d-af95-81679165acf3" />
 
 Nemories is a cozy desktop journaling application where every memory you write becomes part of a living top down world. As your journal grows, so does your little village (town/city if you like journalling a lot like me lol xD), creating a unique visual representation of your memories.
 This was made as a submission to a Hackclub YSWS called ThingOnDesk. This can help anyone organise their thoughts and it can also help you realise that we aren't always going through hard times by seeing many memories of happiness and love :3 
